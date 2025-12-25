@@ -84,10 +84,26 @@ nav a:hover {
 }
 
 /* DESKTOP SUPPORT */
+/* RESPONSIVE LAYOUT FIX */
 @media (min-width: 768px) {
     body {
-        max-width: 420px;
+        max-width: 900px;   /* comfortable laptop width */
         margin: auto;
         background: #dcdcdc;
     }
+
+    .container {
+        padding: 24px;
+    }
+
+    iframe {
+        height: 500px;
+    }
 }
+
+@media (min-width: 1200px) {
+    body {
+        max-width: 1100px;  /* large screens */
+    }
+}
+
