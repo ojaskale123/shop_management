@@ -1,18 +1,30 @@
+/* RESET */
 * {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
 }
 
+/* BODY (PAGE BACKGROUND ONLY) */
 body {
     font-family: system-ui, sans-serif;
-    background: #e6e6e6;
+    background: #eeeeee;
     color: #2b2b2b;
-    padding-bottom: 70px;
+    padding-bottom: 100px; /* space for floating nav */
 }
 
+/* APP WRAPPER */
+.app {
+    width: 100%;
+    max-width: 480px;
+    min-height: 100vh;
+    margin: 0 auto;
+    background: #e6e6e6;
+}
+
+/* HEADER */
 header {
-    background: #111;
+    background: #0a0a0a;
     color: #f2f2f2;
     padding: 16px;
     text-align: center;
@@ -20,64 +32,97 @@ header {
     font-weight: 600;
 }
 
+/* CONTENT CONTAINER */
 .container {
     padding: 16px;
 }
 
+/* CARD */
 .card {
-    background: #f5f5f5;
+    background: #f7f7f7;
     border-radius: 14px;
     padding: 16px;
     margin-bottom: 14px;
     box-shadow: 0 4px 10px rgba(0,0,0,0.06);
+    position: relative;
 }
 
+/* INPUTS */
 input {
     width: 100%;
     padding: 12px;
     border-radius: 10px;
     border: 1px solid #ccc;
     font-size: 15px;
+    background: #fff;
 }
 
+/* BUTTON */
 .button {
     width: 100%;
+    min-height: 48px;
     background: #2f2f2f;
     color: #fff;
     padding: 14px;
     border-radius: 12px;
     border: none;
     font-size: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
 }
 
+.button:active {
+    transform: scale(0.98);
+}
+
+/* STOCK STATUS */
 .low {
-    color: red;
+    color: #c0392b;
     font-weight: 600;
 }
 
+/* FLOATING BOTTOM NAV */
 nav {
     position: fixed;
-    bottom: 0;
-    width: 100%;
+    bottom: 14px;
+    left: 50%;
+    transform: translateX(-50%);
     background: #111;
     display: flex;
-    justify-content: space-around;
-    padding: 10px 0;
+    gap: 26px;
+    padding: 12px 22px;
+    border-radius: 24px;
+    box-shadow: 0 12px 28px rgba(0,0,0,0.3);
+    z-index: 100;
 }
 
+/* NAV ITEMS */
 nav a {
-    color: #bbb;
+    color: #ccc;
     text-decoration: none;
     font-size: 12px;
+    padding: 10px 14px;
+    border-radius: 14px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    min-width: 60px; /* larger tap area */
 }
 
 nav a:hover {
+    background: rgba(255,255,255,0.08);
     color: #fff;
 }
 
+/* DESKTOP IMPROVEMENT */
 @media (min-width: 768px) {
-    body {
-        max-width: 1000px;
-        margin: auto;
+    .app {
+        border-radius: 12px;
+        margin-top: 20px;
+        margin-bottom: 20px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.15);
     }
 }
