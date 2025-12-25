@@ -288,19 +288,77 @@ header {
 }
 .suggestions {
     background: #1c1c1c;
-    border-radius: 10px;
-    margin-top: 6px;
+    border-radius: 14px;
+    margin-top: 8px;
     overflow: hidden;
+    border: 1px solid #333;
 }
 
 .suggestions div {
-    padding: 10px;
-    cursor: pointer;
-    font-size: 14px;
-    color: #ccc;
+    padding: 16px 18px;
+    font-size: 18px;
+    color: #eee;
+    border-bottom: 1px solid #2a2a2a;
+}
+
+.suggestions div:last-child {
+    border-bottom: none;
 }
 
 .suggestions div:hover {
     background: #333;
-    color: #fff;
+}
+
+
+/* Make inputs easier to tap */
+input {
+    width: 100%;
+    box-sizing: border-box;
+}
+.stock-alert-card {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 18px;
+}
+
+.stock-alert-card h3 {
+    font-size: 20px;
+}
+
+.stock-alert-card small {
+    font-size: 14px;
+}
+
+.alert-badge {
+    min-width: 30px;
+    height: 30px;
+    font-size: 16px;
+    font-weight: bold;
+    border-radius: 50%;
+    background: red;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+@media (max-width: 600px) {
+
+    header {
+        font-size: 22px;
+        padding: 16px;
+    }
+
+    .card {
+        margin-bottom: 16px;
+    }
+
+    nav a {
+        font-size: 14px;
+    }
+
+    nav span {
+        display: block;
+        font-size: 12px;
+    }
 }
