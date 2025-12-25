@@ -16,6 +16,11 @@
         onkeyup="searchProduct()"
         style="margin-bottom:12px;"
     >
+    <div id="nameSuggestions" class="suggestions"></div>
+
+    <input id="search" oninput="suggestNames(this.value, 'searchSuggestions')" />
+<div id="searchSuggestions" class="suggestions"></div>
+
 
     <div id="sell"></div>
 </div>

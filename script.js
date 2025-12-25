@@ -29,6 +29,8 @@ function addStock() {
     document.getElementById("qty").value = "";
 }
 updateStockAlertBadge();
+document.getElementById("nameSuggestions").innerHTML = "";
+
 
 
 /* ================= DASHBOARD ================= */
@@ -304,3 +306,38 @@ function updateStockAlertBadge() {
         badge.style.display = "none";
     }
 }
+function suggestNames(value, boxId) {
+    const box = document.getElementById(boxId);
+    if (!box) return;
+
+    box.innerHTML = "";
+
+    if (!value.trim()) return;
+
+    const inventory = getInventory();
+    const matches = inventory
+        .map(i => i.name)
+        .filter(name =>
+            name.toLowerCase().startsWith(value.toLowerCase())
+        );
+
+    // remove duplicates
+    const unique = [...new Set(matches)];
+
+    unique.forEach(name => {
+        const div = document.createElement("div");
+        div.innerText = name;
+        div.onclick = () => {
+            if (boxId === "nameSuggestions") {
+                document.getElementById("name").value = name;
+            } else {
+                document.getElementById("search").value = name;
+                renderSellList();
+            }
+            box.innerHTML = "";
+        };
+        box.appendChild(div);
+    });
+}
+const s = document.getElementById("searchSuggestions");
+if (s) s.innerHTML = "";

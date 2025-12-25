@@ -286,3 +286,21 @@ header {
 .clickable:active {
     transform: scale(0.97);
 }
+.suggestions {
+    background: #1c1c1c;
+    border-radius: 10px;
+    margin-top: 6px;
+    overflow: hidden;
+}
+
+.suggestions div {
+    padding: 10px;
+    cursor: pointer;
+    font-size: 14px;
+    color: #ccc;
+}
+
+.suggestions div:hover {
+    background: #333;
+    color: #fff;
+}
