@@ -6,7 +6,7 @@ function saveInventory(data) {
     localStorage.setItem("inventory", JSON.stringify(data));
 }
 
-/* ADD STOCK */
+/* ---------------- ADD STOCK ---------------- */
 function addStock() {
     const name = document.getElementById("name").value.trim();
     const qty = parseInt(document.getElementById("qty").value);
@@ -27,11 +27,12 @@ function addStock() {
 
     saveInventory(inventory);
     alert("Stock Added");
+
     document.getElementById("name").value = "";
     document.getElementById("qty").value = "";
 }
 
-/* LOAD DASHBOARD */
+/* ---------------- DASHBOARD ---------------- */
 function loadDashboard() {
     const box = document.getElementById("list");
     if (!box) return;
@@ -47,32 +48,27 @@ function loadDashboard() {
     });
 }
 
-/* SELL PRODUCT */
+/* ---------------- SELL PAGE ---------------- */
 function loadSell() {
+    renderSellList("");
+}
+
+function renderSellList(searchText) {
     const box = document.getElementById("sell");
     if (!box) return;
 
     box.innerHTML = "";
-    getInventory().forEach(p => {
-        box.innerHTML += `
-        <div class="card">
-            <b>${p.name}</b><br>
-            Qty: ${p.qty}<br><br>
-            <button class="button" onclick="sell('${p.name}')">Sell 1</button>
-        </div>`;
-    });
-}
-
-function sell(name) {
     let inventory = getInventory();
-    let item = inventory.find(p => p.name === name);
 
-    if (!item || item.qty <= 0) {
-        alert("Out of stock");
-        return;
-    }
+    inventory
+        .filter(p =>
+            p.name.toLowerCase().includes(searchText.toLowerCase())
+        )
+        .forEach((p, index) => {
+            box.innerHTML += `
+            <div class="card">
+                <b>${p.name}</b><br>
+                Available: ${p.qty}<br><br>
 
-    item.qty -= 1;
-    saveInventory(inventory);
-    loadSell();
-}
+                <div style="display:flex; gap:10px; align-items:center;">
+                    <button class="button" style="wi
