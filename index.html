@@ -1,41 +1,21 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Shop App</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stock Dashboard</title>
     <link rel="stylesheet" href="style.css">
 </head>
-<body>
+<body onload="loadDashboard()">
 
-<header>
-    My Kirana Shop
-</header>
+<header>Inventory Dashboard</header>
 
-<div class="container">
-
-    <div class="card">
-        <p><b>📍 Address:</b> Local Market, Pune</p><br>
-        <p><b>📞 Phone:</b> 1234567890</p>
-    </div>
-
-    <div class="card">
-        <a class="button" href="https://wa.me/911234567890?text=Hello" target="_blank">
-            💬 WhatsApp Shop
-        </a>
-    </div>
-
-    <div class="card">
-       <iframe src="https://www.google.com/maps/embed?pb=!1m16!1m12!1m3!1d3722.047833106342!2d78.99886972460288!3d21.110659084961835!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!2m1!1slokmanya%20metro%20station!5e0!3m2!1sen!2sin!4v1766657855754!5m2!1sen!2sin" width="600" height="450" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe></div>
-
-</div>
+<div class="container" id="stockList"></div>
 
 <nav>
-    <a href="index.html">🏠 Home</a>
-    <a href="sales.html">💰 Sales</a>
-    <a href="stock.html">📦 Stock</a>
-    <a href="kharcha.html">📊 Expense</a>
+    <a href="index.html">Stock</a>
+    <a href="add-stock.html">Add</a>
+    <a href="sell.html">Sell</a>
 </nav>
 
+<script src="script.js"></script>
 </body>
 </html>
-
