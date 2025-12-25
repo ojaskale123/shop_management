@@ -8,15 +8,15 @@
 /* BODY */
 body {
     font-family: system-ui, -apple-system, BlinkMacSystemFont;
-    background: #f2f2f2;
-    color: #222;
+    background: #74815b;
+    color: #4e6627;
     padding-bottom: 70px; /* space for bottom nav */
 }
 
 /* APP HEADER */
 header {
     background: #111;
-    color: #fff;
+    color: #f0f1ec;
     padding: 16px;
     text-align: center;
     font-size: 18px;
@@ -30,7 +30,7 @@ header {
 
 /* CARD STYLE */
 .card {
-    background: #fff;
+    background: #C5D89D;
     border-radius: 14px;
     padding: 16px;
     margin-bottom: 16px;
