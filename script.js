@@ -1,3 +1,4 @@
+/* ================= STORAGE ================= */
 function getInventory() {
     return JSON.parse(localStorage.getItem("inventory")) || [];
 }
@@ -6,7 +7,7 @@ function saveInventory(data) {
     localStorage.setItem("inventory", JSON.stringify(data));
 }
 
-/* ---------------- ADD STOCK ---------------- */
+/* ================= ADD STOCK ================= */
 function addStock() {
     const name = document.getElementById("name").value.trim();
     const qty = parseInt(document.getElementById("qty").value);
@@ -27,8 +28,10 @@ function addStock() {
     document.getElementById("name").value = "";
     document.getElementById("qty").value = "";
 }
+updateStockAlertBadge();
 
-/* ---------------- DASHBOARD ---------------- */
+
+/* ================= DASHBOARD ================= */
 function loadDashboard() {
     const box = document.getElementById("list");
     if (!box) return;
@@ -43,7 +46,7 @@ function loadDashboard() {
 
         box.innerHTML += `
         <div class="card" style="position:relative;">
-            
+
             <!-- Corner Actions -->
             <div style="
                 position:absolute;
@@ -67,9 +70,88 @@ function loadDashboard() {
             ${status}
         </div>`;
     });
+
+    loadOutOfStock();
 }
 
-/* ---------------- INLINE EDIT ---------------- */
+function toggleStockAlert() {
+    const panel = document.getElementById("stockAlertPanel");
+
+    if (panel.style.display === "none") {
+        renderStockAlerts();
+        panel.style.display = "block";
+    } else {
+        panel.style.display = "none";
+    }
+}
+
+function renderStockAlerts() {
+    const box = document.getElementById("stockAlertList");
+    const inventory = getInventory();
+
+    box.innerHTML = "";
+
+    const outOfStock = inventory.filter(i => i.qty === 0);
+    const lowStock = inventory.filter(i => i.qty > 0 && i.qty <= 10);
+
+    if (outOfStock.length === 0 && lowStock.length === 0) {
+        box.innerHTML = `<small style="opacity:0.7;">No stock issues 🎉</small>`;
+        return;
+    }
+
+    if (outOfStock.length > 0) {
+        box.innerHTML += `<b>❌ Out of Stock</b>`;
+        outOfStock.forEach(item => {
+            box.innerHTML += `
+                <div class="alert-item alert-out">
+                    • ${item.name}
+                </div>
+            `;
+        });
+    }
+
+    if (lowStock.length > 0) {
+        box.innerHTML += `<br><b>⚠️ Low Stock</b>`;
+        lowStock.forEach(item => {
+            box.innerHTML += `
+                <div class="alert-item alert-low">
+                    • ${item.name} (${item.qty} left)
+                </div>
+            `;
+        });
+    }
+}
+
+
+/* ================= OUT OF STOCK BLOCK ================= */
+function loadOutOfStock() {
+    const box = document.getElementById("outOfStockList");
+    if (!box) return;
+
+    const inventory = getInventory();
+    const outItems = inventory.filter(item => item.qty === 0);
+
+    box.innerHTML = "";
+
+    if (outItems.length === 0) {
+        box.innerHTML = `<small style="opacity:0.7;">All items are in stock 👍</small>`;
+        return;
+    }
+
+    outItems.forEach(item => {
+        box.innerHTML += `
+            <div style="
+                padding:6px 0;
+                font-size:14px;
+                color:#ff6b6b;
+            ">
+                • ${item.name}
+            </div>
+        `;
+    });
+}
+
+/* ================= INLINE EDIT ================= */
 function enableEdit(index) {
     let inventory = getInventory();
     const nameDiv = document.getElementById(`name-${index}`);
@@ -101,7 +183,7 @@ function saveEdit(index, value) {
     loadDashboard();
 }
 
-/* ---------------- DELETE ITEM ---------------- */
+/* ================= DELETE ITEM ================= */
 function deleteItem(index) {
     let inventory = getInventory();
     inventory.splice(index, 1);
@@ -109,14 +191,16 @@ function deleteItem(index) {
     loadDashboard();
 }
 
-/* ---------------- SELL PAGE ---------------- */
+/* ================= SELL PAGE ================= */
 function loadSell() {
     renderSellList();
 }
 
 function renderSellList() {
     const box = document.getElementById("sell");
-    const searchText = document.getElementById("search").value.toLowerCase();
+    const searchInput = document.getElementById("search");
+    const searchText = searchInput ? searchInput.value.toLowerCase() : "";
+
     if (!box) return;
 
     box.innerHTML = "";
@@ -173,4 +257,50 @@ function confirmSell(index) {
     inventory[index].qty -= qtyToSell;
     saveInventory(inventory);
     renderSellList();
+}
+
+/* ================= ACTIVE NAV ================= */
+document.addEventListener("DOMContentLoaded", () => {
+    const links = document.querySelectorAll("nav a");
+    const currentPage = window.location.pathname.split("/").pop();
+
+    links.forEach(link => {
+        if (link.getAttribute("href") === currentPage) {
+            link.classList.add("active");
+        }
+    });
+});
+
+function updateStockAlertBadge() {
+    const badge = document.getElementById("stockAlertBadge");
+    if (!badge) return;
+
+    const inventory = getInventory();
+
+    const outOfStock = inventory.filter(i => i.qty === 0).length;
+    const lowStock = inventory.filter(i => i.qty > 0 && i.qty <= 10).length;
+
+    const totalAlerts = outOfStock + lowStock;
+
+    if (totalAlerts > 0) {
+        badge.innerText = totalAlerts;
+        badge.style.display = "flex";
+    } else {
+        badge.style.display = "none";
+    }
+}
+function updateStockAlertBadge() {
+    const badge = document.getElementById("stockAlertBadge");
+    if (!badge) return;
+
+    const inventory = getInventory();
+    const count =
+        inventory.filter(i => i.qty === 0 || (i.qty > 0 && i.qty <= 10)).length;
+
+    if (count > 0) {
+        badge.innerText = count;
+        badge.style.display = "flex";
+    } else {
+        badge.style.display = "none";
+    }
 }

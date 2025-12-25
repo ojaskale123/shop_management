@@ -4,11 +4,36 @@
     <title>Inventory</title>
     <link rel="stylesheet" href="style.css">
 </head>
+
 <body onload="loadDashboard()">
 
 <header>Stock Dashboard</header>
 
-<div class="container" id="list"></div>
+<div class="container">
+
+    <!-- STOCK ALERT CARD -->
+    <div class="card dashboard-card clickable stock-alert-card"
+         onclick="toggleStockAlert()">
+        <div>
+            <h3>📉 Stock Alerts</h3>
+            <small style="opacity:0.7;">Tap to view</small>
+        </div>
+
+        <div id="stockAlertBadge" class="alert-badge" style="display:none;">
+            0
+        </div>
+    </div>
+
+    <!-- EXPANDABLE STOCK ALERT LIST -->
+    <div id="stockAlertPanel" class="card" style="display:none; margin-bottom:16px;">
+        <h3 style="margin-bottom:10px;">📉 Stock Alerts</h3>
+        <div id="stockAlertList"></div>
+    </div>
+
+    <!-- INVENTORY LIST -->
+    <div id="list"></div>
+
+</div>
 
 <nav>
     <a href="index.html">
@@ -24,7 +49,6 @@
         <span>Sell</span>
     </a>
 </nav>
-
 
 <script src="script.js"></script>
 </body>
