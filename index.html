@@ -1,62 +1,37 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Stock Dashboard</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="stylesheet" href="style.css">
-
-    <!-- Firebase -->
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
-        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
-
-        const firebaseConfig = {
-          apiKey: "AIzaSyAC4MVFsXVc9AWyKBzDUIUrxjmkcQu6DxE",
-          authDomain: "kirana-store-af039.firebaseapp.com",
-          projectId: "kirana-store-af039",
-          storageBucket: "kirana-store-af039.firebasestorage.app",
-          messagingSenderId: "383514829490",
-          appId: "1:383514829490:web:af7eba443e3b149ca65fab"
-        };
-
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth();
-
-        onAuthStateChanged(auth, (user) => {
-            if (!user) window.location.href = "login.html";
-        });
-    </script>
+  <title>Dashboard</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
 </head>
-<body onload="loadDashboard()">
 
-<div class="app">
-<header>Stock Dashboard</header>
+<body>
 
-<div class="container dashboard-grid">
-    <div class="card dashboard-card" onclick="filterInventory('all')">
-        <h3>Total Products</h3>
-        <p id="totalItems">0</p>
-    </div>
+<h1>Stock Dashboard</h1>
+<button onclick="logout()">Logout</button>
 
-    <div class="card dashboard-card" onclick="filterInventory('low')">
-        <h3>Low Stock</h3>
-        <p id="lowItems">0</p>
-    </div>
+<!-- Firebase INIT -->
+<script src="firebase.js"></script>
 
-    <div class="card dashboard-card" onclick="filterInventory('out')">
-        <h3>Out of Stock</h3>
-        <p id="outItems">0</p>
-    </div>
-</div>
+<!-- Auth Protection -->
+<script type="module">
+  import { onAuthStateChanged, signOut }
+  from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
 
-<nav>
-    <a class="active" href="index.html">📦<span>Stock</span></a>
-    <a href="add-stock.html">➕<span>Add</span></a>
-    <a href="sell.html">🛒<span>Sell</span></a>
-    <a href="history.html">📜<span>History</span></a>
-</nav>
+  const auth = window.auth;
 
-<script type="module" src="script.js"></script>
-</div>
+  onAuthStateChanged(auth, (user) => {
+    if (!user) {
+      window.location.href = "login.html";
+    }
+  });
+
+  window.logout = function () {
+    signOut(auth).then(() => {
+      window.location.href = "login.html";
+    });
+  };
+</script>
+
 </body>
 </html>

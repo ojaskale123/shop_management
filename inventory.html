@@ -1,33 +1,31 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Inventory</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="stylesheet" href="style.css">
-
-    <!-- Firebase Auth -->
-    <script type="module">
-        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
-        const auth = getAuth();
-        onAuthStateChanged(auth, (user) => { if (!user) window.location.href = "login.html"; });
-    </script>
+  <title>Inventory</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
 </head>
-<body onload="loadInventory()">
 
-<div class="app">
-<header>Inventory</header>
+<body>
 
-<div class="container">
-    <input type="text" placeholder="Search product..." oninput="searchStock(this.value)">
-    <div id="searchSuggestions" class="suggestions"></div>
-    <div id="inventoryList" class="inventory-list"></div>
-</div>
+<h1>Inventory Page</h1>
+<a href="index.html">Back</a>
 
-<nav>
-    <a href="index.html">⬅️<span>Back</span></a>
-</nav>
+<!-- Firebase INIT -->
+<script src="firebase.js"></script>
 
-<script type="module" src="script.js"></script>
-</div>
+<!-- Auth Protection -->
+<script type="module">
+  import { onAuthStateChanged }
+  from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
+
+  const auth = window.auth;
+
+  onAuthStateChanged(auth, (user) => {
+    if (!user) {
+      window.location.href = "login.html";
+    }
+  });
+</script>
+
 </body>
 </html>
