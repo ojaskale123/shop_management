@@ -1,46 +1,68 @@
-/* RESET */
+/* ===============================
+   ROOT SCALE (AUTO-ADJUST)
+================================ */
+:root {
+    --fs-sm: clamp(14px, 3.5vw, 16px);
+    --fs-md: clamp(16px, 4vw, 18px);
+    --fs-lg: clamp(18px, 5vw, 22px);
+    --fs-xl: clamp(22px, 6vw, 26px);
+}
+
+/* ===============================
+   RESET
+================================ */
 * {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
 }
 
-/* BODY */
+/* ===============================
+   BODY
+================================ */
 body {
     font-family: system-ui, sans-serif;
     background: #292929;
     color: #e0e0e0;
-    padding-bottom: 110px; /* space for nav */
+    padding-bottom: 120px; /* space for nav */
 }
 
-/* APP WRAPPER */
+/* ===============================
+   APP WRAPPER
+================================ */
 .app {
-    max-width: 480px;
+    max-width: 520px;
     margin: auto;
     min-height: 100vh;
     background: #141414;
 }
 
-/* HEADER */
+/* ===============================
+   HEADER
+================================ */
 header {
     background: #000;
     color: #fff;
-    padding: 18px;
-    font-size: 24px;
+    padding: clamp(16px, 4vw, 22px);
+    font-size: var(--fs-xl);
     font-weight: 600;
     text-align: center;
 }
 
-/* CONTAINER */
+/* ===============================
+   CONTAINER
+================================ */
 .container {
-    padding: 16px;
+    padding: clamp(14px, 4vw, 20px);
 }
 
-/* CARD */
+/* ===============================
+   CARD
+================================ */
 .card {
     background: #1c1c1c;
-    border-radius: 16px;
-    padding: 18px;
+    border-radius: 18px;
+    padding: clamp(16px, 4vw, 22px);
     margin-bottom: 16px;
     box-shadow: 0 6px 14px rgba(0,0,0,0.4);
     transition: transform 0.15s ease;
@@ -50,42 +72,69 @@ header {
     transform: scale(0.97);
 }
 
-/* DASHBOARD GRID */
+/* ===============================
+   DASHBOARD GRID
+================================ */
 .dashboard-grid {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
     gap: 14px;
+    margin-bottom: 16px;
 }
 
-/* DASHBOARD CARD */
+@media (min-width: 768px) {
+    .dashboard-grid {
+        grid-template-columns: repeat(4, 1fr);
+    }
+}
+
+/* ===============================
+   DASHBOARD CARD
+================================ */
 .dashboard-card {
     min-height: 120px;
-    font-size: 16px;
+    font-size: var(--fs-md);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
 }
 
-/* INPUTS */
+/* ===============================
+   INPUTS
+================================ */
 input {
     width: 100%;
-    padding: 16px;
-    font-size: 18px;
+    padding: clamp(14px, 4vw, 18px);
+    font-size: var(--fs-md);
     border-radius: 14px;
     border: 1px solid #333;
     background: #111;
     color: #fff;
 }
 
-/* BUTTON */
+/* ===============================
+   BUTTON
+================================ */
 .button {
     width: 100%;
-    padding: 16px;
-    font-size: 18px;
+    min-height: 52px;
+    font-size: var(--fs-md);
     border-radius: 14px;
     background: #2e2e2e;
     color: #fff;
     border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
-/* SUGGESTIONS */
+.button:active {
+    transform: scale(0.97);
+}
+
+/* ===============================
+   SUGGESTIONS
+================================ */
 .suggestions {
     margin-top: 8px;
     background: #1c1c1c;
@@ -95,8 +144,8 @@ input {
 }
 
 .suggestions div {
-    padding: 16px 18px;
-    font-size: 18px;
+    padding: clamp(14px, 4vw, 18px);
+    font-size: var(--fs-md);
     border-bottom: 1px solid #2a2a2a;
 }
 
@@ -104,20 +153,28 @@ input {
     border-bottom: none;
 }
 
-/* STOCK ALERT CARD */
+/* ===============================
+   STOCK ALERT CARD
+================================ */
 .stock-alert-card {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 18px;
+    padding: clamp(16px, 4vw, 22px);
     cursor: pointer;
 }
 
-/* ALERT BADGE */
+.stock-alert-card h3 {
+    font-size: var(--fs-lg);
+}
+
+/* ===============================
+   ALERT BADGE
+================================ */
 .alert-badge {
-    min-width: 30px;
-    height: 30px;
-    font-size: 16px;
+    min-width: 32px;
+    height: 32px;
+    font-size: var(--fs-sm);
     font-weight: bold;
     background: #ff4d4d;
     color: #fff;
@@ -127,9 +184,11 @@ input {
     justify-content: center;
 }
 
-/* ALERT ITEMS */
+/* ===============================
+   ALERT ITEMS
+================================ */
 .alert-item {
-    font-size: 16px;
+    font-size: var(--fs-md);
     padding: 8px 0;
 }
 
@@ -141,7 +200,9 @@ input {
     color: #ff6b6b;
 }
 
-/* FLOATING NAV */
+/* ===============================
+   FLOATING NAV
+================================ */
 nav {
     position: fixed;
     bottom: 16px;
@@ -150,31 +211,25 @@ nav {
     background: #111;
     display: flex;
     gap: 26px;
-    padding: 14px 24px;
+    padding: 14px 26px;
     border-radius: 28px;
     box-shadow: 0 12px 28px rgba(0,0,0,0.4);
 }
 
 nav a {
-    min-width: 64px;
-    padding: 12px;
-    font-size: 14px;
+    min-width: 72px;
+    padding: 12px 14px;
+    font-size: var(--fs-sm);
     color: #ccc;
     text-decoration: none;
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 4px;
+    gap: 6px;
+    border-radius: 16px;
 }
 
 nav a.active {
     background: rgba(255,255,255,0.15);
     color: #fff;
-}
-
-/* DESKTOP ENHANCEMENT */
-@media (min-width: 768px) {
-    .dashboard-grid {
-        grid-template-columns: repeat(4, 1fr);
-    }
 }
