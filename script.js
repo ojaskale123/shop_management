@@ -1,176 +1,177 @@
-/* ================= STORAGE ================= */
+// ================= STORAGE =================
 function getInventory() { return JSON.parse(localStorage.getItem("inventory")) || []; }
 function saveInventory(data) { localStorage.setItem("inventory", JSON.stringify(data)); }
 
-/* ================= HISTORY ================= */
-function getHistory() { return JSON.parse(localStorage.getItem("history")) || []; }
-function saveHistory(data) { localStorage.setItem("history", JSON.stringify(data)); }
-
-/* ================= ADD STOCK ================= */
 function addStock() {
     const name = document.getElementById("name").value.trim();
     const qty = parseFloat(document.getElementById("qty").value);
     const unit = document.getElementById("unit").value;
 
-    if (!name || isNaN(qty)) { alert("Enter product name & quantity"); return; }
+    if (!name || isNaN(qty)) { alert("Enter product name and quantity"); return; }
 
-    let inventory = getInventory();
-    const exist = inventory.find(i => i.name.toLowerCase() === name.toLowerCase() && i.unit === unit);
+    let stock = JSON.parse(localStorage.getItem("stock")) || [];
+    const existing = stock.find(item => item.name.toLowerCase() === name.toLowerCase());
 
-    if (exist) { exist.qty += qty; } 
-    else { inventory.push({ name, qty, unit }); }
+    const now = new Date().toISOString();
 
-    saveInventory(inventory);
-    addHistory(`Added ${qty} ${unit} of ${name}`);
-    document.getElementById("name").value = ""; 
+    if (existing) {
+        existing.qty += qty;
+        existing.unit = unit;
+        stock.push({history:'added', name, qty, unit, date:now});
+    } else {
+        stock.push({name, qty, unit});
+        let history = JSON.parse(localStorage.getItem("history")) || [];
+        history.push({history:'added', name, qty, unit, date:now});
+        localStorage.setItem("history", JSON.stringify(history));
+    }
+
+    localStorage.setItem("stock", JSON.stringify(stock));
+
+    document.getElementById("name").value = "";
     document.getElementById("qty").value = "";
+
     alert("Stock added successfully");
-    loadDashboard();
 }
 
-/* ================= DASHBOARD ================= */
+// ================= DASHBOARD =================
 function loadDashboard() {
-    const inv = getInventory();
-    document.getElementById("totalItems").innerText = inv.length;
-    document.getElementById("lowItems").innerText = inv.filter(i => i.qty > 0 && i.qty <= 10).length;
-    document.getElementById("outItems").innerText = inv.filter(i => i.qty === 0).length;
+    const stock = JSON.parse(localStorage.getItem("stock")) || [];
+    document.getElementById("totalItems").innerText = stock.length;
+    document.getElementById("lowItems").innerText = stock.filter(i=>i.qty>0 && i.qty<=10).length;
+    document.getElementById("outItems").innerText = stock.filter(i=>i.qty===0).length;
 }
 
 function filterInventory(type) {
-    localStorage.setItem("filterType", type);
-    location.href = "inventory.html";
+    let stock = JSON.parse(localStorage.getItem("stock")) || [];
+    if(type==='low') stock = stock.filter(i=>i.qty>0 && i.qty<=10);
+    else if(type==='out') stock = stock.filter(i=>i.qty===0);
+    localStorage.setItem("filteredInventory", JSON.stringify(stock));
+    window.location.href = "inventory.html";
 }
 
-/* ================= INVENTORY PAGE ================= */
+// ================= INVENTORY =================
 function loadInventory() {
+    let stock = JSON.parse(localStorage.getItem("filteredInventory")) || JSON.parse(localStorage.getItem("stock")) || [];
     const list = document.getElementById("inventoryList");
-    if (!list) return;
-    const filter = localStorage.getItem("filterType") || "all";
-    const inv = getInventory();
     list.innerHTML = "";
-    inv.forEach(item => {
-        if (filter === "low" && !(item.qty > 0 && item.qty <= 10)) return;
-        if (filter === "out" && item.qty !== 0) return;
-        const status = item.qty === 0 ? "status-out" : (item.qty <= 5 ? "status-low" : "status-in");
-        list.innerHTML += `<div class="inventory-item"><span>${item.name}</span><span class="${status}">${item.qty} ${item.unit}</span></div>`;
+    stock.forEach(item=>{
+        let statusClass="status-in", statusText="In Stock";
+        if(item.qty===0){statusClass="status-out"; statusText="Out";}
+        else if(item.qty<=10){statusClass="status-low"; statusText="Low";}
+        list.innerHTML += `<div class="inventory-item"><span>${item.name}</span><span class="${statusClass}">${item.qty} • ${statusText}</span></div>`;
     });
-    localStorage.removeItem("filterType");
+    localStorage.removeItem("filteredInventory");
 }
 
-function searchStock(text) {
-    const list = document.getElementById("inventoryList");
-    if (!list) return;
-    const inv = getInventory();
-    list.innerHTML = "";
-    inv.forEach(item => {
-        if (item.name.toLowerCase().includes(text.toLowerCase())) {
-            const status = item.qty === 0 ? "status-out" : (item.qty <= 5 ? "status-low" : "status-in");
-            list.innerHTML += `<div class="inventory-item"><span>${item.name}</span><span class="${status}">${item.qty} ${item.unit}</span></div>`;
-        }
-    });
-}
-
-/* ================= SUGGESTIONS ================= */
-function suggestNames(value, boxId) {
-    const box = document.getElementById(boxId);
-    if (!box) return;
-    box.innerHTML = "";
-    if (!value.trim()) return;
-    const inv = getInventory();
-    const names = [...new Set(inv.map(i => i.name).filter(n => n.toLowerCase().startsWith(value.toLowerCase())))];
-    names.forEach(name => {
-        const div = document.createElement("div");
-        div.innerText = name;
-        div.onclick = () => {
-            document.querySelector(`#${boxId === "nameSuggestions" ? "name" : "searchInput"}`).value = name;
-            box.innerHTML = "";
-            if (boxId === "searchSuggestions") renderSellList();
-        };
-        box.appendChild(div);
+function searchStock(value){
+    const stock = JSON.parse(localStorage.getItem("stock")) || [];
+    const filtered = stock.filter(item=>item.name.toLowerCase().startsWith(value.toLowerCase()));
+    const suggestions = document.getElementById("searchSuggestions");
+    suggestions.innerHTML="";
+    filtered.forEach(item=>{
+        const div=document.createElement("div");
+        div.innerText=item.name;
+        div.onclick=()=>{document.querySelector('input[placeholder="Search product..."]').value=item.name; suggestions.innerHTML=""; loadInventory();}
+        suggestions.appendChild(div);
     });
 }
 
-/* ================= SELL PAGE ================= */
-function loadSell() { renderSellList(); }
-
-function renderSellList() {
+// ================= SELL =================
+function loadSell(){
     const box = document.getElementById("sell");
-    if (!box) return;
-    const text = document.getElementById("searchInput")?.value.toLowerCase() || "";
-    const inv = getInventory();
-    box.innerHTML = "";
-
-    inv.forEach((item, index) => {
-        if (item.qty <= 0) return;
-        if (text && !item.name.toLowerCase().includes(text)) return;
-        box.innerHTML += `
+    if(!box) return;
+    const search=document.getElementById("searchInput")?.value.toLowerCase()||"";
+    const stock = JSON.parse(localStorage.getItem("stock")) || [];
+    box.innerHTML="";
+    stock.forEach((p,index)=>{
+        if(p.qty<=0) return;
+        if(search && !p.name.toLowerCase().includes(search)) return;
+        box.innerHTML+=`
         <div class="card">
-            <b>${item.name}</b> <small>(${item.unit})</small><br>
-            Available: ${item.qty} ${item.unit}<br><br>
+            <b>${p.name}</b> (${p.unit})<br>
+            Available: ${p.qty}<br><br>
             <div style="display:flex; gap:12px; align-items:center;">
-                <button class="button" onmousedown="holdChange(${index},-1)" onmouseup="clearHold()" ontouchstart="holdChange(${index},-1)" ontouchend="clearHold()">−</button>
+                <button class="button" style="width:44px" onmousedown="holdChange(${index},-1)" onmouseup="stopHold()">−</button>
                 <span id="sellQty-${index}">1</span>
-                <button class="button" onmousedown="holdChange(${index},1)" onmouseup="clearHold()" ontouchstart="holdChange(${index},1)" ontouchend="clearHold()">+</button>
+                <button class="button" style="width:44px" onmousedown="holdChange(${index},1)" onmouseup="stopHold()">+</button>
             </div><br>
             <button class="button" onclick="confirmSell(${index})">Confirm Sell</button>
         </div>`;
     });
 }
 
-/* HOLD BUTTON SPEED */
 let holdInterval;
-function holdChange(index, delta) {
-    changeQty(index, delta);
-    holdInterval = setInterval(() => { changeQty(index, delta); }, 150);
+function holdChange(index,delta){
+    changeQty(index,delta);
+    holdInterval=setInterval(()=>changeQty(index,delta),200);
 }
-function clearHold() { clearInterval(holdInterval); }
+function stopHold(){clearInterval(holdInterval);}
 
-function changeQty(index, delta) {
-    const span = document.getElementById(`sellQty-${index}`);
-    if (!span) return;
-    let v = parseFloat(span.innerText) + delta;
-    if (v < 0.1) v = 0.1;
-    span.innerText = v.toFixed(1);
+function changeQty(index,delta){
+    const span=document.getElementById(`sellQty-${index}`);
+    if(!span) return;
+    let v=parseFloat(span.innerText)+delta;
+    if(v<0.01)v=0.01;
+    span.innerText=v.toFixed(2);
 }
 
-function confirmSell(index) {
-    let inv = getInventory();
-    const qty = parseFloat(document.getElementById(`sellQty-${index}`).innerText);
-    if (inv[index].qty < qty) return;
-    inv[index].qty -= qty;
-    saveInventory(inv);
-    addHistory(`Sold ${qty} ${inv[index].unit} of ${inv[index].name}`);
-    renderSellList();
+function confirmSell(index){
+    const stock=JSON.parse(localStorage.getItem("stock")) || [];
+    const qty=parseFloat(document.getElementById(`sellQty-${index}`).innerText);
+    if(stock[index].qty<qty) return;
+    stock[index].qty-=qty;
+    localStorage.setItem("stock",JSON.stringify(stock));
+
+    // add to history
+    let history=JSON.parse(localStorage.getItem("history")) || [];
+    const now=new Date().toISOString();
+    history.push({history:'sold',name:stock[index].name,qty:qty,unit:stock[index].unit,date:now});
+    localStorage.setItem("history",JSON.stringify(history));
+
+    loadSell();
     loadDashboard();
 }
 
-/* ================= HISTORY PAGE ================= */
-function addHistory(text) {
-    const hist = getHistory();
-    hist.push({ text, date: new Date().toISOString() });
-    saveHistory(hist);
-}
-
-function loadHistory() {
-    const box = document.getElementById("historyList");
-    if (!box) return;
-    const hist = getHistory().reverse();
-    hist.forEach(h => {
-        box.innerHTML += `<div class="card">${new Date(h.date).toLocaleString()}: ${h.text}</div>`;
+// ================= HISTORY =================
+function loadHistory(){
+    const filter=document.getElementById("historyFilter")?.value || "all";
+    const history=JSON.parse(localStorage.getItem("history")) || [];
+    const list=document.getElementById("historyList");
+    list.innerHTML="";
+    const now=new Date();
+    let filtered=history;
+    if(filter!=='all'){
+        filtered=history.filter(h=>{
+            const d=new Date(h.date);
+            if(filter==='daily') return d.toDateString()===now.toDateString();
+            if(filter==='weekly'){
+                const weekStart=new Date(now); weekStart.setDate(now.getDate()-now.getDay());
+                return d>=weekStart;
+            }
+            if(filter==='monthly') return d.getMonth()===now.getMonth() && d.getFullYear()===now.getFullYear();
+        });
+    }
+    filtered.forEach(h=>{
+        list.innerHTML+=`<div class="card">${h.history.toUpperCase()}: ${h.name} (${h.qty} ${h.unit})</div>`;
     });
 }
 
-function filterHistory(filter) {
-    const box = document.getElementById("historyList");
-    if (!box) return;
-    const hist = getHistory().reverse();
-    const now = new Date();
-    box.innerHTML = "";
-    hist.forEach(h => {
-        const d = new Date(h.date);
-        if (filter === "daily" && (d.toDateString() !== now.toDateString())) return;
-        if (filter === "weekly" && ((now - d) / 1000 / 60 / 60 / 24 > 7)) return;
-        if (filter === "monthly" && (now.getMonth() !== d.getMonth())) return;
-        box.innerHTML += `<div class="card">${d.toLocaleString()}: ${h.text}</div>`;
+// ================= NAME SUGGESTIONS =================
+function suggestNames(value, boxId){
+    const box=document.getElementById(boxId);
+    if(!box) return;
+    box.innerHTML="";
+    if(!value.trim()) return;
+    const names=[...new Set((JSON.parse(localStorage.getItem("stock"))||[]).map(i=>i.name).filter(n=>n.toLowerCase().startsWith(value.toLowerCase())))];
+    names.forEach(name=>{
+        const div=document.createElement("div");
+        div.innerText=name;
+        div.onclick=()=>{
+            const input=boxId==="nameSuggestions"?document.getElementById("name"):document.getElementById("searchInput");
+            if(input) input.value=name;
+            box.innerHTML="";
+            loadSell();
+        };
+        box.appendChild(div);
     });
 }
