@@ -5,41 +5,37 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" href="style.css">
 </head>
-<body>
+<body onload="loadDashboard()">
 
 <div class="app">
 
 <header>Stock Dashboard</header>
 
-<div class="container">
-    <div class="dashboard-grid">
-        <div class="card dashboard-card">
-            <h3>Total Products</h3>
-            <p id="totalItems">0</p>
-        </div>
-        <div class="card dashboard-card">
-            <h3>Low Stock</h3>
-            <p id="lowItems">0</p>
-        </div>
-        <div class="card dashboard-card">
-            <h3>Out of Stock</h3>
-            <p id="outItems">0</p>
-        </div>
+<div class="container dashboard-grid">
+    <div class="card dashboard-card" onclick="filterInventory('all')">
+        <h3>Total Products</h3>
+        <p id="totalItems">0</p>
     </div>
 
-    <button class="button" onclick="location.href='inventory.html'">
-        📋 View All Stock
-    </button>
+    <div class="card dashboard-card" onclick="filterInventory('low')">
+        <h3>Low Stock</h3>
+        <p id="lowItems">0</p>
+    </div>
+
+    <div class="card dashboard-card" onclick="filterInventory('out')">
+        <h3>Out of Stock</h3>
+        <p id="outItems">0</p>
+    </div>
 </div>
 
 <nav>
     <a class="active" href="index.html">📦<span>Stock</span></a>
     <a href="add-stock.html">➕<span>Add</span></a>
     <a href="sell.html">🛒<span>Sell</span></a>
+    <a href="history.html">📜<span>History</span></a>
 </nav>
 
-</div> <!-- app -->
-
 <script src="script.js"></script>
+</div>
 </body>
 </html>

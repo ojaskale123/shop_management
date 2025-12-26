@@ -8,19 +8,11 @@
 <body onload="loadSell()">
 
 <div class="app">
-
 <header>Sell Products</header>
 
 <div class="container">
-    <input 
-        id="searchInput"
-        placeholder="Search product..."
-        oninput="suggestNames(this.value, 'searchSuggestions')"
-        style="margin-bottom:12px;"
-    >
-
+    <input id="searchInput" placeholder="Search product..." oninput="suggestNames(this.value,'searchSuggestions')">
     <div id="searchSuggestions" class="suggestions"></div>
-
     <div id="sell"></div>
 </div>
 
@@ -28,10 +20,10 @@
     <a href="index.html">📦<span>Stock</span></a>
     <a href="add-stock.html">➕<span>Add</span></a>
     <a href="sell.html" class="active">🛒<span>Sell</span></a>
+    <a href="history.html">📜<span>History</span></a>
 </nav>
 
-</div> <!-- app -->
-
 <script src="script.js"></script>
+</div>
 </body>
 </html>

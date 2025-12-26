@@ -8,13 +8,17 @@
 <body>
 
 <div class="app">
-
 <header>Add Stock</header>
 
 <div class="container">
     <div class="card">
-        <input id="name" placeholder="Product name"><br><br>
-        <input id="qty" type="number" placeholder="Quantity"><br><br>
+        <input id="name" placeholder="Product name" oninput="suggestNames(this.value,'nameSuggestions')"><br><br>
+        <input id="qty" type="number" placeholder="Quantity / Weight"><br><br>
+        <select id="unit">
+            <option value="pcs">Piece(s)</option>
+            <option value="kg">Kilogram</option>
+            <option value="g">Gram</option>
+        </select><br><br>
         <button class="button" onclick="addStock()">Add Stock</button>
     </div>
 
@@ -25,10 +29,10 @@
     <a href="index.html">📦<span>Stock</span></a>
     <a href="add-stock.html" class="active">➕<span>Add</span></a>
     <a href="sell.html">🛒<span>Sell</span></a>
+    <a href="history.html">📜<span>History</span></a>
 </nav>
 
-</div> <!-- app -->
-
 <script src="script.js"></script>
+</div>
 </body>
 </html>

@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>History</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body onload="loadHistory()">
+
+<div class="app">
+<header>History</header>
+
+<div class="container">
+    <select id="historyFilter" onchange="filterHistory(this.value)">
+        <option value="all">All</option>
+        <option value="daily">Today</option>
+        <option value="weekly">This Week</option>
+        <option value="monthly">This Month</option>
+    </select>
+    <div id="historyList"></div>
+</div>
+
+<nav>
+    <a href="index.html">📦<span>Stock</span></a>
+    <a href="add-stock.html">➕<span>Add</span></a>
+    <a href="sell.html">🛒<span>Sell</span></a>
+    <a href="history.html" class="active">📜<span>History</span></a>
+</nav>
+
+<script src="script.js"></script>
+</div>
+</body>
+</html>

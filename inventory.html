@@ -8,17 +8,10 @@
 <body onload="loadInventory()">
 
 <div class="app">
-
 <header>Inventory</header>
 
 <div class="container">
-    <input 
-        type="text" 
-        id="inventorySearch"
-        placeholder="Search product..." 
-        oninput="searchStock(this.value)"
-    >
-
+    <input type="text" placeholder="Search product..." oninput="searchStock(this.value)">
     <div id="inventoryList" class="inventory-list"></div>
 </div>
 
@@ -26,8 +19,7 @@
     <a href="index.html">⬅️<span>Back</span></a>
 </nav>
 
-</div> <!-- app -->
-
 <script src="script.js"></script>
+</div>
 </body>
 </html>
