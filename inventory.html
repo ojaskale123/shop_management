@@ -2,29 +2,31 @@
 <html>
 <head>
     <title>Inventory</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" href="style.css">
 </head>
-<body>
+<body onload="loadInventory()">
+
+<div class="app">
 
 <header>Inventory</header>
 
 <div class="container">
-
-    <!-- SEARCH BAR -->
     <input 
         type="text" 
+        id="inventorySearch"
         placeholder="Search product..." 
         oninput="searchStock(this.value)"
     >
 
-    <!-- STOCK LIST -->
     <div id="inventoryList" class="inventory-list"></div>
-
 </div>
 
 <nav>
     <a href="index.html">⬅️<span>Back</span></a>
 </nav>
+
+</div> <!-- app -->
 
 <script src="script.js"></script>
 </body>

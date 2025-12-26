@@ -2,9 +2,12 @@
 <html>
 <head>
     <title>Add Stock</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
+
+<div class="app">
 
 <header>Add Stock</header>
 
@@ -14,25 +17,17 @@
         <input id="qty" type="number" placeholder="Quantity"><br><br>
         <button class="button" onclick="addStock()">Add Stock</button>
     </div>
+
+    <div id="nameSuggestions" class="suggestions"></div>
 </div>
 
 <nav>
-    <a href="index.html">
-        📦
-        <span>Stock</span>
-    </a>
-    <div id="nameSuggestions" class="suggestions"></div>
-
-    <a href="add-stock.html">
-        ➕
-        <span>Add</span>
-    </a>
-    <a href="sell.html">
-        🛒
-        <span>Sell</span>
-    </a>
+    <a href="index.html">📦<span>Stock</span></a>
+    <a href="add-stock.html" class="active">➕<span>Add</span></a>
+    <a href="sell.html">🛒<span>Sell</span></a>
 </nav>
 
+</div> <!-- app -->
 
 <script src="script.js"></script>
 </body>

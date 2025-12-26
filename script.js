@@ -7,50 +7,60 @@ function saveInventory(data) {
     localStorage.setItem("inventory", JSON.stringify(data));
 }
 
+/* ================= ADD STOCK ================= */
 function addStock() {
-    const name = document.getElementById("name").value.trim();
-    const qty = parseInt(document.getElementById("qty").value);
+    const nameInput = document.getElementById("name");
+    const qtyInput = document.getElementById("qty");
+    const name = nameInput.value.trim();
+    const qty = parseInt(qtyInput.value);
 
-    if (!name || isNaN(qty)) {
-        alert("Enter product name and quantity");
+    if (!name || isNaN(qty) || qty <= 0) {
+        alert("Enter valid product name and quantity");
         return;
     }
 
-    let stock = JSON.parse(localStorage.getItem("stock")) || [];
-
-    // Check if product already exists
-    const existing = stock.find(item => item.name.toLowerCase() === name.toLowerCase());
+    let inventory = getInventory();
+    const existing = inventory.find(p => p.name.toLowerCase() === name.toLowerCase());
 
     if (existing) {
         existing.qty += qty;
     } else {
-        stock.push({ name, qty });
+        inventory.push({ name, qty });
     }
 
-    localStorage.setItem("stock", JSON.stringify(stock));
-
-    document.getElementById("name").value = "";
-    document.getElementById("qty").value = "";
+    saveInventory(inventory);
+    nameInput.value = "";
+    qtyInput.value = "";
 
     alert("Stock added successfully");
+    updateStockAlertBadge();
 }
-
 
 /* ================= DASHBOARD ================= */
 function loadDashboard() {
+    const inventory = getInventory();
+    document.getElementById("totalItems").innerText = inventory.length;
+    document.getElementById("lowItems").innerText = inventory.filter(i => i.qty > 0 && i.qty <= 10).length;
+    document.getElementById("outItems").innerText = inventory.filter(i => i.qty === 0).length;
     updateStockAlertBadge();
-    updateTotalStockCount();
 }
 
-/* ================= TOTAL STOCK COUNT ================= */
-function updateTotalStockCount() {
-    const badge = document.getElementById("totalStockCount");
+/* ================= STOCK ALERT ================= */
+function updateStockAlertBadge() {
+    const badge = document.getElementById("stockAlertBadge");
     if (!badge) return;
 
-    badge.innerText = getInventory().length;
+    const inventory = getInventory();
+    const count = inventory.filter(i => i.qty === 0 || (i.qty > 0 && i.qty <= 10)).length;
+
+    if (count > 0) {
+        badge.innerText = count;
+        badge.style.display = "flex";
+    } else {
+        badge.style.display = "none";
+    }
 }
 
-/* ================= STOCK ALERT TOGGLE ================= */
 function toggleStockAlert() {
     const panel = document.getElementById("stockAlertPanel");
     if (!panel) return;
@@ -63,7 +73,6 @@ function toggleStockAlert() {
     }
 }
 
-/* ================= STOCK ALERT CONTENT ================= */
 function renderStockAlerts() {
     const box = document.getElementById("stockAlertList");
     if (!box) return;
@@ -74,45 +83,56 @@ function renderStockAlerts() {
     const out = inventory.filter(i => i.qty === 0);
     const low = inventory.filter(i => i.qty > 0 && i.qty <= 10);
 
-    if (out.length === 0 && low.length === 0) {
+    if (!out.length && !low.length) {
         box.innerHTML = `<small style="opacity:.7;">No stock issues 🎉</small>`;
         return;
     }
 
     if (out.length) {
         box.innerHTML += `<b>❌ Out of Stock</b>`;
-        out.forEach(i => {
-            box.innerHTML += `<div class="alert-item alert-out">• ${i.name}</div>`;
-        });
+        out.forEach(i => box.innerHTML += `<div class="alert-item alert-out">• ${i.name}</div>`);
     }
 
     if (low.length) {
         box.innerHTML += `<br><b>⚠️ Low Stock</b>`;
-        low.forEach(i => {
-            box.innerHTML += `
-                <div class="alert-item alert-low">
-                    • ${i.name} (${i.qty} left)
-                </div>`;
-        });
+        low.forEach(i => box.innerHTML += `<div class="alert-item alert-low">• ${i.name} (${i.qty} left)</div>`);
     }
 }
 
-/* ================= STOCK ALERT BADGE ================= */
-function updateStockAlertBadge() {
-    const badge = document.getElementById("stockAlertBadge");
-    if (!badge) return;
+/* ================= INVENTORY PAGE ================= */
+function loadInventory() {
+    const list = document.getElementById("inventoryList");
+    if (!list) return;
 
     const inventory = getInventory();
-    const count = inventory.filter(
-        i => i.qty === 0 || (i.qty > 0 && i.qty <= 10)
-    ).length;
+    list.innerHTML = "";
 
-    if (count > 0) {
-        badge.innerText = count;
-        badge.style.display = "flex";
-    } else {
-        badge.style.display = "none";
-    }
+    inventory.forEach(item => {
+        let statusClass = "status-in";
+        let statusText = "In Stock";
+
+        if (item.qty === 0) {
+            statusClass = "status-out";
+            statusText = "Out";
+        } else if (item.qty <= 5) {
+            statusClass = "status-low";
+            statusText = "Low";
+        }
+
+        list.innerHTML += `
+            <div class="inventory-item">
+                <span>${item.name}</span>
+                <span class="${statusClass}">${item.qty} • ${statusText}</span>
+            </div>
+        `;
+    });
+}
+
+function searchStock(text) {
+    const items = document.querySelectorAll(".inventory-item");
+    items.forEach(item => {
+        item.style.display = item.innerText.toLowerCase().includes(text.toLowerCase()) ? "flex" : "none";
+    });
 }
 
 /* ================= SELL PAGE ================= */
@@ -122,12 +142,11 @@ function loadSell() {
 
 function renderSellList() {
     const box = document.getElementById("sell");
-    const search = document.getElementById("search");
     if (!box) return;
 
-    const text = search ? search.value.toLowerCase() : "";
+    const searchInput = document.getElementById("searchInput");
+    const text = searchInput ? searchInput.value.toLowerCase() : "";
     const inventory = getInventory();
-
     box.innerHTML = "";
 
     inventory.forEach((p, index) => {
@@ -135,23 +154,19 @@ function renderSellList() {
         if (text && !p.name.toLowerCase().includes(text)) return;
 
         box.innerHTML += `
-        <div class="card">
-            <b>${p.name}</b><br>
-            Available: ${p.qty}<br><br>
+            <div class="card">
+                <b>${p.name}</b><br>
+                Available: ${p.qty}<br><br>
 
-            <div style="display:flex; gap:12px; align-items:center;">
-                <button class="button" style="width:44px"
-                    onclick="changeQty(${index}, -1)">−</button>
+                <div style="display:flex; gap:12px; align-items:center;">
+                    <button class="button" style="width:44px" onclick="changeQty(${index}, -1)">−</button>
+                    <span id="sellQty-${index}">1</span>
+                    <button class="button" style="width:44px" onclick="changeQty(${index}, 1)">+</button>
+                </div><br>
 
-                <span id="sellQty-${index}">1</span>
-
-                <button class="button" style="width:44px"
-                    onclick="changeQty(${index}, 1)">+</button>
-            </div><br>
-
-            <button class="button"
-                onclick="confirmSell(${index})">Confirm Sell</button>
-        </div>`;
+                <button class="button" onclick="confirmSell(${index})">Confirm Sell</button>
+            </div>
+        `;
     });
 }
 
@@ -165,11 +180,8 @@ function changeQty(index, delta) {
 }
 
 function confirmSell(index) {
-    let inventory = getInventory();
-    const qty = parseInt(
-        document.getElementById(`sellQty-${index}`).innerText
-    );
-
+    const inventory = getInventory();
+    const qty = parseInt(document.getElementById(`sellQty-${index}`).innerText);
     if (inventory[index].qty < qty) return;
 
     inventory[index].qty -= qty;
@@ -196,10 +208,7 @@ function suggestNames(value, boxId) {
         const div = document.createElement("div");
         div.innerText = name;
         div.onclick = () => {
-            const input = boxId === "nameSuggestions"
-                ? document.getElementById("name")
-                : document.getElementById("search");
-
+            const input = document.getElementById(boxId === "nameSuggestions" ? "name" : "searchInput");
             if (input) input.value = name;
             box.innerHTML = "";
             renderSellList();
@@ -216,50 +225,9 @@ document.addEventListener("DOMContentLoaded", () => {
             a.classList.add("active");
         }
     });
+
+    // Load inventory if inventory page
+    if (document.getElementById("inventoryList")) loadInventory();
+    if (document.getElementById("totalItems")) loadDashboard();
+    if (document.getElementById("sell")) loadSell();
 });
-let stock = JSON.parse(localStorage.getItem("stock")) || [];
-
-/* LOAD INVENTORY */
-function loadInventory() {
-    const list = document.getElementById("inventoryList");
-    if (!list) return;
-
-    list.innerHTML = "";
-
-    stock.forEach(item => {
-        let statusClass = "status-in";
-        let statusText = "In Stock";
-
-        if (item.qty === 0) {
-            statusClass = "status-out";
-            statusText = "Out";
-        } else if (item.qty <= 5) {
-            statusClass = "status-low";
-            statusText = "Low";
-        }
-
-        list.innerHTML += `
-            <div class="inventory-item">
-                <span>${item.name}</span>
-                <span class="${statusClass}">
-                    ${item.qty} • ${statusText}
-                </span>
-            </div>
-        `;
-    });
-}
-
-/* SEARCH */
-function searchStock(text) {
-    const items = document.querySelectorAll(".inventory-item");
-
-    items.forEach(item => {
-        item.style.display = item.innerText
-            .toLowerCase()
-            .includes(text.toLowerCase())
-            ? "flex"
-            : "none";
-    });
-}
-
-loadInventory();

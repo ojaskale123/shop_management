@@ -8,7 +8,42 @@
     --fs-xl: clamp(22px, 6vw, 26px);
 
     /* CALM COLOR THEME */
-    --bg-body: #1c201e;
+    --bg-body: #1c201e;/* Ensure container is responsive */
+.container {
+    padding: 16px;
+}
+
+/* Dashboard grid adjusts on mobile */
+.dashboard-grid {
+    display: grid;
+    grid-template-columns: 1fr; /* single column on phones */
+    gap: 12px;
+}
+
+@media (min-width: 480px) {
+    .dashboard-grid {
+        grid-template-columns: repeat(2, 1fr); /* two columns on small tablets */
+    }
+}
+
+@media (min-width: 768px) {
+    .dashboard-grid {
+        grid-template-columns: repeat(3, 1fr); /* desktop view */
+    }
+}
+
+/* Card width should not overflow */
+.card {
+    width: 100%;
+    box-sizing: border-box;
+}
+
+/* Inputs and buttons full width */
+input, .button {
+    width: 100%;
+    max-width: 100%;
+}
+
     --bg-app: #2a2f2c;
     --bg-header: #1a1f1d;
     --bg-card: #1f2422;
