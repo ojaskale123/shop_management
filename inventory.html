@@ -4,6 +4,13 @@
     <title>Inventory</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" href="style.css">
+
+    <!-- Firebase Auth -->
+    <script type="module">
+        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
+        const auth = getAuth();
+        onAuthStateChanged(auth, (user) => { if (!user) window.location.href = "login.html"; });
+    </script>
 </head>
 <body onload="loadInventory()">
 
@@ -12,6 +19,7 @@
 
 <div class="container">
     <input type="text" placeholder="Search product..." oninput="searchStock(this.value)">
+    <div id="searchSuggestions" class="suggestions"></div>
     <div id="inventoryList" class="inventory-list"></div>
 </div>
 
@@ -19,7 +27,7 @@
     <a href="index.html">⬅️<span>Back</span></a>
 </nav>
 
-<script src="script.js"></script>
+<script type="module" src="script.js"></script>
 </div>
 </body>
 </html>

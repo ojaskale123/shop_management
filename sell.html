@@ -1,9 +1,14 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Sell Products</title>
+    <title>Sell</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" href="style.css">
+    <script type="module">
+        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
+        const auth = getAuth();
+        onAuthStateChanged(auth, (user) => { if (!user) window.location.href = "login.html"; });
+    </script>
 </head>
 <body onload="loadSell()">
 
@@ -11,7 +16,7 @@
 <header>Sell Products</header>
 
 <div class="container">
-    <input id="searchInput" placeholder="Search product..." oninput="suggestNames(this.value,'searchSuggestions')">
+    <input id="searchInput" placeholder="Search product..." oninput="suggestNames(this.value, 'searchSuggestions')" style="margin-bottom:12px;">
     <div id="searchSuggestions" class="suggestions"></div>
     <div id="sell"></div>
 </div>
@@ -19,11 +24,11 @@
 <nav>
     <a href="index.html">📦<span>Stock</span></a>
     <a href="add-stock.html">➕<span>Add</span></a>
-    <a href="sell.html" class="active">🛒<span>Sell</span></a>
+    <a class="active" href="sell.html">🛒<span>Sell</span></a>
     <a href="history.html">📜<span>History</span></a>
 </nav>
 
-<script src="script.js"></script>
+<script type="module" src="script.js"></script>
 </div>
 </body>
 </html>

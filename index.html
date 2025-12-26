@@ -4,11 +4,32 @@
     <title>Stock Dashboard</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" href="style.css">
+
+    <!-- Firebase -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
+        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
+
+        const firebaseConfig = {
+          apiKey: "AIzaSyAC4MVFsXVc9AWyKBzDUIUrxjmkcQu6DxE",
+          authDomain: "kirana-store-af039.firebaseapp.com",
+          projectId: "kirana-store-af039",
+          storageBucket: "kirana-store-af039.firebasestorage.app",
+          messagingSenderId: "383514829490",
+          appId: "1:383514829490:web:af7eba443e3b149ca65fab"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth();
+
+        onAuthStateChanged(auth, (user) => {
+            if (!user) window.location.href = "login.html";
+        });
+    </script>
 </head>
 <body onload="loadDashboard()">
 
 <div class="app">
-
 <header>Stock Dashboard</header>
 
 <div class="container dashboard-grid">
@@ -35,7 +56,7 @@
     <a href="history.html">📜<span>History</span></a>
 </nav>
 
-<script src="script.js"></script>
+<script type="module" src="script.js"></script>
 </div>
 </body>
 </html>
