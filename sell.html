@@ -18,7 +18,8 @@
     <div class="container">
         <input id="searchInput" placeholder="Search product..." oninput="suggestNames(this.value, 'searchSuggestions')">
         <div id="searchSuggestions" class="suggestions"></div>
-        <div id="sell"></div>
+
+        <div id="sell" class="inventory-list"></div>
     </div>
 
     <nav>
@@ -30,5 +31,72 @@
 </div>
 
 <script type="module" src="script.js"></script>
+
+<script>
+function increaseQty(id) {
+    const span = document.getElementById(id + '-qty');
+    span.textContent = parseInt(span.textContent) + 1;
+}
+
+function decreaseQty(id) {
+    const span = document.getElementById(id + '-qty');
+    if(parseInt(span.textContent) > 0) {
+        span.textContent = parseInt(span.textContent) - 1;
+    }
+}
+
+// Example function to load products dynamically
+function loadSell() {
+    const sellDiv = document.getElementById('sell');
+
+    // Replace this array with your actual products
+    const products = [
+        {id: 'prod1', name: 'Product 1'},
+        {id: 'prod2', name: 'Product 2'},
+        {id: 'prod3', name: 'Product 3'}
+    ];
+
+    products.forEach(p => {
+        const item = document.createElement('div');
+        item.className = 'inventory-item';
+        item.innerHTML = `
+            <span>${p.name}</span>
+            <div class="qty-controls">
+                <button onclick="decreaseQty('${p.id}')">-</button>
+                <span id="${p.id}-qty">1</span>
+                <button onclick="increaseQty('${p.id}')">+</button>
+            </div>
+        `;
+        sellDiv.appendChild(item);
+    });
+}
+
+// Example suggestion function
+function suggestNames(value, suggestionId) {
+    const suggestionsDiv = document.getElementById(suggestionId);
+    suggestionsDiv.innerHTML = '';
+    if(!value) return;
+
+    // Replace with actual products array
+    const products = [
+        {name: 'Product 1'},
+        {name: 'Product 2'},
+        {name: 'Product 3'}
+    ];
+
+    const filtered = products.filter(p => p.name.toLowerCase().includes(value.toLowerCase()));
+    filtered.forEach(p => {
+        const div = document.createElement('div');
+        div.textContent = p.name;
+        div.className = 'card';
+        div.onclick = () => {
+            document.getElementById('searchInput').value = p.name;
+            suggestionsDiv.innerHTML = '';
+        };
+        suggestionsDiv.appendChild(div);
+    });
+}
+</script>
+
 </body>
 </html>

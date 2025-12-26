@@ -40,13 +40,6 @@ header {
   flex: 1;
 }
 
-/* ===== DASHBOARD GRID ===== */
-.dashboard-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 12px;
-}
-
 /* ===== CARD ===== */
 .card {
   background-color: #333333;
@@ -56,6 +49,7 @@ header {
   box-shadow: 0 4px 10px rgba(0,0,0,0.5);
   cursor: pointer;
   transition: transform 0.15s ease, box-shadow 0.15s ease;
+  margin-bottom: 12px;
 }
 
 .card:hover {
@@ -85,7 +79,7 @@ header {
   font-size: 16px;
   cursor: pointer;
   color: #fff;
-  background-color: #2d6cdf; /* all main buttons blue */
+  background-color: #2d6cdf;
   transition: background 0.2s ease;
 }
 

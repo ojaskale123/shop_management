@@ -4,12 +4,9 @@
 import { auth } from "./firebase.js";
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
 
-// Call this on protected pages
 window.protectPage = function () {
   onAuthStateChanged(auth, (user) => {
-    if (!user) {
-      window.location.href = "index.html";
-    }
+    if (!user) window.location.href = "index.html";
   });
 };
 
@@ -129,7 +126,6 @@ window.suggestNames = function (value, boxId) {
     const div = document.createElement("div");
     div.innerText = name;
     div.onclick = () => {
-      // Fixed: always update correct input
       const input = document.getElementById("searchInput") || document.getElementById("name");
       input.value = name;
       box.innerHTML = "";
@@ -182,7 +178,7 @@ function changeQty(i, d) {
 window.sellNow = function (i) {
   const stock = getStock();
   const qty = parseFloat(document.getElementById(`q-${i}`).innerText);
-  if (qty > stock[i].qty) return;
+  if (qty > stock[i].qty) return alert("Not enough stock");
 
   stock[i].qty -= qty;
   saveStock(stock);
@@ -198,14 +194,14 @@ window.sellNow = function (i) {
   saveHistory(history);
 
   loadSell();
-  loadDashboard();
+  if (document.getElementById("totalItems")) loadDashboard();
 };
 
 /***********************
   📜 HISTORY
 ************************/
 window.loadHistory = function () {
-  const filter = document.getElementById("historyFilter").value;
+  const filter = document.getElementById("historyFilter")?.value || "all";
   const list = document.getElementById("historyList");
   if (!list) return;
 
