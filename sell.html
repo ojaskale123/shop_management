@@ -1,14 +1,10 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Sell</title>
-
-    <!-- REQUIRED FOR MOBILE -->
+    <title>Sell Products</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
-
     <link rel="stylesheet" href="style.css">
 </head>
-
 <body onload="loadSell()">
 
 <div class="app">
@@ -16,8 +12,6 @@
 <header>Sell Products</header>
 
 <div class="container">
-
-    <!-- SEARCH INPUT -->
     <input 
         id="searchInput"
         placeholder="Search product..."
@@ -25,27 +19,15 @@
         style="margin-bottom:12px;"
     >
 
-    <!-- SUGGESTIONS -->
     <div id="searchSuggestions" class="suggestions"></div>
 
-    <!-- SELL LIST -->
     <div id="sell"></div>
-
 </div>
 
 <nav>
-    <a href="index.html">
-        📦
-        <span>Stock</span>
-    </a>
-    <a href="add-stock.html">
-        ➕
-        <span>Add</span>
-    </a>
-    <a href="sell.html" class="active">
-        🛒
-        <span>Sell</span>
-    </a>
+    <a href="index.html">📦<span>Stock</span></a>
+    <a href="add-stock.html">➕<span>Add</span></a>
+    <a href="sell.html" class="active">🛒<span>Sell</span></a>
 </nav>
 
 </div> <!-- app -->

@@ -7,36 +7,34 @@ function saveInventory(data) {
     localStorage.setItem("inventory", JSON.stringify(data));
 }
 
-/* ================= ADD STOCK ================= */
 function addStock() {
-    const nameInput = document.getElementById("name");
-    const qtyInput = document.getElementById("qty");
+    const name = document.getElementById("name").value.trim();
+    const qty = parseInt(document.getElementById("qty").value);
 
-    if (!nameInput || !qtyInput) return;
-
-    const name = nameInput.value.trim();
-    const qty = parseInt(qtyInput.value);
-
-    if (!name || qty <= 0) return;
-
-    let inventory = getInventory();
-    let item = inventory.find(
-        p => p.name.toLowerCase() === name.toLowerCase()
-    );
-
-    if (item) {
-        item.qty += qty;
-    } else {
-        inventory.push({ name, qty });
+    if (!name || isNaN(qty)) {
+        alert("Enter product name and quantity");
+        return;
     }
 
-    saveInventory(inventory);
+    let stock = JSON.parse(localStorage.getItem("stock")) || [];
 
-    nameInput.value = "";
-    qtyInput.value = "";
+    // Check if product already exists
+    const existing = stock.find(item => item.name.toLowerCase() === name.toLowerCase());
 
-    updateStockAlertBadge();
+    if (existing) {
+        existing.qty += qty;
+    } else {
+        stock.push({ name, qty });
+    }
+
+    localStorage.setItem("stock", JSON.stringify(stock));
+
+    document.getElementById("name").value = "";
+    document.getElementById("qty").value = "";
+
+    alert("Stock added successfully");
 }
+
 
 /* ================= DASHBOARD ================= */
 function loadDashboard() {
