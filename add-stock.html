@@ -1,80 +1,40 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Add Stock</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="stylesheet" href="style.css">
-
-    <script type="module">
-        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
-        const auth = getAuth();
-        onAuthStateChanged(auth, (user) => { if (!user) window.location.href = "login.html"; });
-    </script>
+  <title>Add Stock</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
+  <div class="app">
+    <header>Add Stock</header>
 
-<header>Add Stock</header>
-
-<div class="container">
-    <div class="card">
-        <input id="name" placeholder="Product name"><br><br>
-        <input id="qty" type="number" placeholder="Quantity / weight"><br><br>
+    <div class="container">
+      <div class="card">
+        <input id="name" placeholder="Product name"><br>
+        <input id="qty" type="number" placeholder="Quantity / weight"><br>
         <select id="unit">
-            <option value="pcs">Pieces</option>
-            <option value="kg">Kg</option>
-            <option value="g">Gram</option>
-        </select><br><br>
+          <option value="pcs">Pieces</option>
+          <option value="kg">Kg</option>
+          <option value="g">Gram</option>
+        </select><br>
         <button class="button" onclick="addStock()">Add Stock</button>
+      </div>
+      <div id="nameSuggestions" class="suggestions"></div>
     </div>
-    <div id="nameSuggestions" class="suggestions"></div>
-</div>
 
-<nav>
-    <a href="index.html">📦<span>Stock</span></a>
-    <a class="active" href="add-stock.html">➕<span>Add</span></a>
-    <a href="sell.html">🛒<span>Sell</span></a>
-</nav>
+    <nav>
+      <a href="inventory.html">📦<span>Stock</span></a>
+      <a class="active" href="add-stock.html">➕<span>Add</span></a>
+      <a href="sell.html">🛒<span>Sell</span></a>
+    </nav>
+  </div>
 
-<script type="module" src="script.js"></script>
-</body>
-</html>
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Add Stock</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="stylesheet" href="style.css">
-
-    <script type="module">
-        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
-        const auth = getAuth();
-        onAuthStateChanged(auth, (user) => { if (!user) window.location.href = "login.html"; });
-    </script>
-</head>
-<body>
-
-<header>Add Stock</header>
-
-<div class="container">
-    <div class="card">
-        <input id="name" placeholder="Product name"><br><br>
-        <input id="qty" type="number" placeholder="Quantity / weight"><br><br>
-        <select id="unit">
-            <option value="pcs">Pieces</option>
-            <option value="kg">Kg</option>
-            <option value="g">Gram</option>
-        </select><br><br>
-        <button class="button" onclick="addStock()">Add Stock</button>
-    </div>
-    <div id="nameSuggestions" class="suggestions"></div>
-</div>
-
-<nav>
-    <a href="index.html">📦<span>Stock</span></a>
-    <a class="active" href="add-stock.html">➕<span>Add</span></a>
-    <a href="sell.html">🛒<span>Sell</span></a>
-</nav>
-
-<script type="module" src="script.js"></script>
+  <script type="module">
+    import { auth } from "./firebase.js";
+    import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
+    onAuthStateChanged(auth, user => { if (!user) window.location.href = "index.html"; });
+  </script>
+  <script type="module" src="script.js"></script>
 </body>
 </html>

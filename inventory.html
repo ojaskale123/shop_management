@@ -3,29 +3,29 @@
 <head>
   <title>Inventory</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="style.css">
 </head>
+<body onload="loadInventory()">
+  <div class="app">
+    <header>Inventory</header>
 
-<body>
+    <div class="container">
+      <div id="inventoryList" class="inventory-list"></div>
+    </div>
 
-<h1>Inventory Page</h1>
-<a href="index.html">Back</a>
+    <nav>
+      <a class="active" href="inventory.html">📦<span>Stock</span></a>
+      <a href="add-stock.html">➕<span>Add</span></a>
+      <a href="sell.html">🛒<span>Sell</span></a>
+      <a href="history.html">📜<span>History</span></a>
+    </nav>
+  </div>
 
-<!-- Firebase INIT -->
-<script src="firebase.js"></script>
-
-<!-- Auth Protection -->
-<script type="module">
-  import { onAuthStateChanged }
-  from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
-
-  const auth = window.auth;
-
-  onAuthStateChanged(auth, (user) => {
-    if (!user) {
-      window.location.href = "login.html";
-    }
-  });
-</script>
-
+  <script type="module">
+    import { auth } from "./firebase.js";
+    import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
+    onAuthStateChanged(auth, user => { if (!user) window.location.href = "index.html"; });
+  </script>
+  <script type="module" src="script.js"></script>
 </body>
 </html>

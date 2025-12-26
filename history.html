@@ -1,39 +1,37 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>History</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="stylesheet" href="style.css">
-    <script type="module">
-        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
-        const auth = getAuth();
-        onAuthStateChanged(auth, (user) => { if (!user) window.location.href = "login.html"; });
-    </script>
+  <title>History</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="style.css">
 </head>
 <body onload="loadHistory()">
+  <div class="app">
+    <header>History</header>
 
-<div class="app">
-<header>History</header>
-
-<div class="container">
-    <select id="historyFilter" onchange="loadHistory()">
+    <div class="container">
+      <select id="historyFilter" onchange="loadHistory()">
         <option value="all">All</option>
         <option value="daily">Daily</option>
         <option value="weekly">Weekly</option>
         <option value="monthly">Monthly</option>
-    </select>
+      </select>
+      <div id="historyList"></div>
+    </div>
 
-    <div id="historyList"></div>
-</div>
+    <nav>
+      <a href="inventory.html">📦<span>Stock</span></a>
+      <a href="add-stock.html">➕<span>Add</span></a>
+      <a href="sell.html">🛒<span>Sell</span></a>
+      <a class="active" href="history.html">📜<span>History</span></a>
+    </nav>
+  </div>
 
-<nav>
-    <a href="index.html">📦<span>Stock</span></a>
-    <a href="add-stock.html">➕<span>Add</span></a>
-    <a href="sell.html">🛒<span>Sell</span></a>
-    <a class="active" href="history.html">📜<span>History</span></a>
-</nav>
-
-<script type="module" src="script.js"></script>
-</div>
+  <script type="module">
+    import { auth } from "./firebase.js";
+    import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
+    onAuthStateChanged(auth, user => { if (!user) window.location.href = "index.html"; });
+  </script>
+  <script type="module" src="script.js"></script>
 </body>
 </html>

@@ -2,25 +2,24 @@
   🔐 AUTH PROTECTION
 ************************/
 import { auth } from "./firebase.js";
-import { onAuthStateChanged } from
-"https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
+import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
 
 // Call this on protected pages
 window.protectPage = function () {
   onAuthStateChanged(auth, (user) => {
     if (!user) {
-      window.location.href = "login.html";
+      window.location.href = "index.html";
     }
   });
 };
 
-
 /***********************
-  💾 LOCAL STORAGE
+  💾 LOCAL STORAGE HELPERS
 ************************/
 function getStock() {
   return JSON.parse(localStorage.getItem("stock")) || [];
 }
+
 function saveStock(data) {
   localStorage.setItem("stock", JSON.stringify(data));
 }
@@ -28,10 +27,10 @@ function saveStock(data) {
 function getHistory() {
   return JSON.parse(localStorage.getItem("history")) || [];
 }
+
 function saveHistory(data) {
   localStorage.setItem("history", JSON.stringify(data));
 }
-
 
 /***********************
   ➕ ADD STOCK
@@ -48,14 +47,10 @@ window.addStock = function () {
 
   const stock = getStock();
   const now = new Date().toISOString();
-
   const item = stock.find(i => i.name.toLowerCase() === name.toLowerCase());
 
-  if (item) {
-    item.qty += qty;
-  } else {
-    stock.push({ name, qty, unit });
-  }
+  if (item) item.qty += qty;
+  else stock.push({ name, qty, unit });
 
   saveStock(stock);
 
@@ -65,10 +60,8 @@ window.addStock = function () {
 
   document.getElementById("name").value = "";
   document.getElementById("qty").value = "";
-
   alert("Stock Added");
 };
-
 
 /***********************
   📊 DASHBOARD
@@ -84,14 +77,12 @@ window.loadDashboard = function () {
 
 window.filterInventory = function (type) {
   let stock = getStock();
-
   if (type === "low") stock = stock.filter(i => i.qty > 0 && i.qty <= 10);
   if (type === "out") stock = stock.filter(i => i.qty === 0);
 
   localStorage.setItem("filteredInventory", JSON.stringify(stock));
   window.location.href = "inventory.html";
 };
-
 
 /***********************
   📋 INVENTORY
@@ -101,6 +92,7 @@ window.loadInventory = function () {
     JSON.parse(localStorage.getItem("filteredInventory")) || getStock();
 
   const box = document.getElementById("inventoryList");
+  if (!box) return;
   box.innerHTML = "";
 
   stock.forEach(item => {
@@ -118,7 +110,6 @@ window.loadInventory = function () {
 
   localStorage.removeItem("filteredInventory");
 };
-
 
 /***********************
   🔍 SEARCH + SUGGESTIONS
@@ -138,16 +129,17 @@ window.suggestNames = function (value, boxId) {
     const div = document.createElement("div");
     div.innerText = name;
     div.onclick = () => {
-      document.querySelector("input").value = name;
+      // Fixed: always update correct input
+      const input = document.getElementById("searchInput") || document.getElementById("name");
+      input.value = name;
       box.innerHTML = "";
     };
     box.appendChild(div);
   });
 };
 
-
 /***********************
-  🛒 SELL (HOLD + / -)
+  🛒 SELL
 ************************/
 let holdTimer;
 
@@ -209,16 +201,16 @@ window.sellNow = function (i) {
   loadDashboard();
 };
 
-
 /***********************
   📜 HISTORY
 ************************/
 window.loadHistory = function () {
   const filter = document.getElementById("historyFilter").value;
   const list = document.getElementById("historyList");
+  if (!list) return;
+
   const data = getHistory();
   list.innerHTML = "";
-
   const now = new Date();
 
   data.filter(h => {

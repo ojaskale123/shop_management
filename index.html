@@ -1,29 +1,41 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Dashboard</title>
+  <title>Login</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="style.css">
 </head>
+<body>
+  <div class="app login-box">
+    <h2>Login / Register</h2>
 
-<body onload="loadDashboard()">
+    <input id="email" type="email" placeholder="Email"><br>
+    <input id="password" type="password" placeholder="Password"><br>
 
-<h1>Stock Dashboard</h1>
-<button onclick="logout()">Logout</button>
+    <div class="button-group">
+      <button class="button" onclick="login()">Login</button>
+      <button class="button" onclick="register()">Register</button>
+    </div>
+  </div>
 
-<script type="module">
-  import { auth } from "./firebase.js";
-  import { onAuthStateChanged, signOut } from
-  "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
+  <script type="module">
+    import { auth } from "./firebase.js";
+    import {
+      signInWithEmailAndPassword,
+      createUserWithEmailAndPassword
+    } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
 
-  onAuthStateChanged(auth, (user) => {
-    if (!user) window.location.href = "login.html";
-  });
+    window.login = () => {
+      signInWithEmailAndPassword(auth, email.value, password.value)
+      .then(() => window.location.href = "inventory.html")
+      .catch(e => alert(e.message));
+    };
 
-  window.logout = () => {
-    signOut(auth).then(() => window.location.href = "login.html");
-  };
-</script>
-
-<script src="script.js"></script>
+    window.register = () => {
+      createUserWithEmailAndPassword(auth, email.value, password.value)
+      .then(() => alert("Account created! Now login"))
+      .catch(e => alert(e.message));
+    };
+  </script>
 </body>
 </html>
