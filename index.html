@@ -1,61 +1,39 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Inventory</title>
-
-    <!-- IMPORTANT -->
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-
+    <title>Stock</title>
     <link rel="stylesheet" href="style.css">
 </head>
-
-<body onload="loadDashboard()">
-
-<div class="app">
+<body>
 
 <header>Stock Dashboard</header>
 
 <div class="container">
-
-    <!-- STOCK ALERT CARD -->
-    <div class="card dashboard-card clickable stock-alert-card"
-         onclick="toggleStockAlert()">
-        <div>
-            <h3>📉 Stock Alerts</h3>
-            <small style="opacity:0.7;">Tap to view</small>
-        </div>
-
-        <div id="stockAlertBadge" class="alert-badge" style="display:none;">
-            0
-        </div>
+    <div class="card dashboard-card">
+        <h3>Total Products</h3>
+        <p id="totalItems">0</p>
     </div>
 
-    <!-- EXPANDABLE STOCK ALERT LIST -->
-    <div id="stockAlertPanel" class="card" style="display:none; margin-bottom:16px;">
-        <h3 style="margin-bottom:10px;">📉 Stock Alerts</h3>
-        <div id="stockAlertList"></div>
+    <div class="card dashboard-card">
+        <h3>Low Stock</h3>
+        <p id="lowItems">0</p>
     </div>
 
-    <!-- INVENTORY LIST -->
-    <div id="list"></div>
+    <div class="card dashboard-card">
+        <h3>Out of Stock</h3>
+        <p id="outItems">0</p>
+    </div>
 
+    <!-- MAIN BUTTON -->
+    <button class="button" onclick="location.href='inventory.html'">
+        📋 View All Stock
+    </button>
 </div>
 
-</div> <!-- app end -->
-
 <nav>
-    <a href="index.html">
-        📦
-        <span>Stock</span>
-    </a>
-    <a href="add-stock.html">
-        ➕
-        <span>Add</span>
-    </a>
-    <a href="sell.html">
-        🛒
-        <span>Sell</span>
-    </a>
+    <a class="active" href="index.html">📦<span>Stock</span></a>
+    <a href="add-stock.html">➕<span>Add</span></a>
+    <a href="sell.html">🛒<span>Sell</span></a>
 </nav>
 
 <script src="script.js"></script>

@@ -1,11 +1,26 @@
 /* ===============================
-   ROOT SCALE (AUTO-ADJUST)
+   ROOT SCALE + THEME COLORS
 ================================ */
 :root {
     --fs-sm: clamp(14px, 3.5vw, 16px);
     --fs-md: clamp(16px, 4vw, 18px);
     --fs-lg: clamp(18px, 5vw, 22px);
     --fs-xl: clamp(22px, 6vw, 26px);
+
+    /* CALM COLOR THEME */
+    --bg-body: #1c201e;
+    --bg-app: #2a2f2c;
+    --bg-header: #1a1f1d;
+    --bg-card: #1f2422;
+    --bg-input: #141817;
+    --bg-nav: #161a18;
+
+    --text-main: #e6ece8;
+    --text-muted: #9aa3a0;
+
+    --accent: #6fbf9b;
+    --danger: #ff6b6b;
+    --warning: #f0ad4e;
 }
 
 /* ===============================
@@ -22,9 +37,9 @@
 ================================ */
 body {
     font-family: system-ui, sans-serif;
-    background: #292929;
-    color: #e0e0e0;
-    padding-bottom: 120px; /* space for nav */
+    background: var(--bg-body);
+    color: var(--text-main);
+    padding-bottom: 120px;
 }
 
 /* ===============================
@@ -34,15 +49,15 @@ body {
     max-width: 520px;
     margin: auto;
     min-height: 100vh;
-    background: #141414;
+    background: var(--bg-app);
 }
 
 /* ===============================
    HEADER
 ================================ */
 header {
-    background: #000;
-    color: #fff;
+    background: var(--bg-header);
+    color: var(--text-main);
     padding: clamp(16px, 4vw, 22px);
     font-size: var(--fs-xl);
     font-weight: 600;
@@ -60,7 +75,7 @@ header {
    CARD
 ================================ */
 .card {
-    background: #1c1c1c;
+    background: var(--bg-card);
     border-radius: 18px;
     padding: clamp(16px, 4vw, 22px);
     margin-bottom: 16px;
@@ -107,9 +122,13 @@ input {
     padding: clamp(14px, 4vw, 18px);
     font-size: var(--fs-md);
     border-radius: 14px;
-    border: 1px solid #333;
-    background: #111;
-    color: #fff;
+    border: 1px solid #2f3a36;
+    background: var(--bg-input);
+    color: var(--text-main);
+}
+
+input::placeholder {
+    color: var(--text-muted);
 }
 
 /* ===============================
@@ -120,8 +139,9 @@ input {
     min-height: 52px;
     font-size: var(--fs-md);
     border-radius: 14px;
-    background: #2e2e2e;
-    color: #fff;
+    background: linear-gradient(135deg, #5ea98b, #6fbf9b);
+    color: #102019;
+    font-weight: 600;
     border: none;
     display: flex;
     align-items: center;
@@ -137,10 +157,10 @@ input {
 ================================ */
 .suggestions {
     margin-top: 8px;
-    background: #1c1c1c;
+    background: var(--bg-card);
     border-radius: 14px;
     overflow: hidden;
-    border: 1px solid #333;
+    border: 1px solid #2f3a36;
 }
 
 .suggestions div {
@@ -166,6 +186,7 @@ input {
 
 .stock-alert-card h3 {
     font-size: var(--fs-lg);
+    color: var(--accent);
 }
 
 /* ===============================
@@ -176,7 +197,7 @@ input {
     height: 32px;
     font-size: var(--fs-sm);
     font-weight: bold;
-    background: #ff4d4d;
+    background: var(--danger);
     color: #fff;
     border-radius: 50%;
     display: flex;
@@ -193,11 +214,11 @@ input {
 }
 
 .alert-low {
-    color: #f0ad4e;
+    color: var(--warning);
 }
 
 .alert-out {
-    color: #ff6b6b;
+    color: var(--danger);
 }
 
 /* ===============================
@@ -208,19 +229,19 @@ nav {
     bottom: 16px;
     left: 50%;
     transform: translateX(-50%);
-    background: #111;
+    background: var(--bg-nav);
     display: flex;
     gap: 26px;
     padding: 14px 26px;
     border-radius: 28px;
-    box-shadow: 0 12px 28px rgba(0,0,0,0.4);
+    box-shadow: 0 12px 28px rgba(189, 184, 184, 0.4);
 }
 
 nav a {
     min-width: 72px;
     padding: 12px 14px;
     font-size: var(--fs-sm);
-    color: #ccc;
+    color: var(--text-muted);
     text-decoration: none;
     display: flex;
     flex-direction: column;
@@ -230,6 +251,35 @@ nav a {
 }
 
 nav a.active {
-    background: rgba(255,255,255,0.15);
-    color: #fff;
+    background: rgba(111, 191, 155, 0.2);
+    color: var(--text-main);
+}
+/* INVENTORY LIST */
+.inventory-list {
+    margin-top: 16px;
+}
+
+.inventory-item {
+    background: #1c1c1c;
+    padding: 16px;
+    border-radius: 14px;
+    margin-bottom: 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.inventory-item span {
+    font-size: var(--fs-md);
+}
+
+/* STATUS COLORS */
+.status-in {
+    color: #7CFF9B;
+}
+.status-low {
+    color: #FFD166;
+}
+.status-out {
+    color: #FF6B6B;
 }
