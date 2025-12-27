@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dashboard</title>
+<link rel="stylesheet" href="style.css">
+<style>
+/* SIMPLE POPUP */
+#popup {
+  display: none;
+  position: fixed;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  background: #1a1818;
+  color: #fff;
+  padding: 20px;
+  border-radius: 16px;
+  width: 90%;
+  max-width: 400px;
+  max-height: 70%;
+  overflow-y: auto;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.6);
+  z-index: 100;
+}
+
+#popup h3 {
+  text-align: center;
+  margin-bottom: 15px;
+}
+
+#popup ul {
+  list-style: none;
+  padding: 0;
+}
+
+#popup li {
+  padding: 8px;
+  border-bottom: 1px solid #444;
+}
+
+#popup button {
+  margin-top: 15px;
+  width: 100%;
+  padding: 10px;
+  border-radius: 12px;
+  border: none;
+  background-color: #00a862;
+  color: #fff;
+  cursor: pointer;
+}
+</style>
+</head>
+<body>
+
+<div class="shop-nav">My Shop Name</div>
+
+<div style="display:flex; flex-wrap:wrap; justify-content: center;">
+  <div class="card" onclick="showList('all')">
+    Total Stock<br><span id="totalStock">0</span>
+  </div>
+  <div class="card" onclick="showList('out')">
+    Out of Stock<br><span id="outStock">0</span>
+  </div>
+  <div class="card" onclick="showList('low')">
+    Low Stock<br><span id="lowStock">0</span>
+  </div>
+</div>
+
+<!-- POPUP -->
+<div id="popup">
+  <h3 id="popupTitle">Stock List</h3>
+  <ul id="popupList"></ul>
+  <button onclick="closePopup()">Close</button>
+</div>
+
+<div class="bottom-nav">
+  <button onclick="location.href='index.html'">Dashboard</button>
+  <button onclick="location.href='add.html'">Add</button>
+  <button onclick="location.href='sell.html'">Sell</button>
+  <button onclick="location.href='history.html'">History</button>
+</div>
+
+<script>
+// Sample stock from localStorage or empty
+let stock = JSON.parse(localStorage.getItem("stock")) || [];
+
+// Update counters
+function updateDashboard() {
+  document.getElementById("totalStock").innerText = stock.length;
+  document.getElementById("outStock").innerText = stock.filter(i => i.quantity === 0).length;
+  document.getElementById("lowStock").innerText = stock.filter(i => i.quantity > 0 && i.quantity <= 10).length;
+}
+
+// Show popup list
+function showList(type) {
+  const popup = document.getElementById("popup");
+  const list = document.getElementById("popupList");
+  const title = document.getElementById("popupTitle");
+  list.innerHTML = '';
+
+  let filtered = [];
+  if(type === 'all') {
+    title.innerText = "Total Stock";
+    filtered = stock;
+  }
+  if(type === 'out') {
+    title.innerText = "Out of Stock";
+    filtered = stock.filter(item => item.quantity === 0);
+  }
+  if(type === 'low') {
+    title.innerText = "Low Stock";
+    filtered = stock.filter(item => item.quantity > 0 && item.quantity <= 10);
+  }
+
+  filtered.forEach(item => {
+    const li = document.createElement('li');
+    li.innerText = `${item.name} - ${item.quantity} ${item.unit}`;
+    list.appendChild(li);
+  });
+
+  popup.style.display = 'block';
+}
+
+// Close popup
+function closePopup() {
+  document.getElementById("popup").style.display = 'none';
+}
+
+// Initialize
+updateDashboard();
+</script>
+
+</body>
+</html>

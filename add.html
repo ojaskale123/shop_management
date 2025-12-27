@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Add Stock</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="shop-nav">My Shop Name</div>
+
+<div style="padding: 20px; max-width:500px; margin:auto;">
+  <input type="text" id="productName" placeholder="Product Name">
+
+  <div style="display:flex; gap:10px; margin-top:10px;">
+    <input type="number" id="productQuantity" placeholder="Quantity">
+    <select id="unit">
+      <option value="pcs">pcs</option>
+      <option value="g">g</option>
+      <option value="kg">kg</option>
+    </select>
+  </div>
+
+  <button class="btn" onclick="addStock()">Add Stock</button>
+</div>
+
+<div class="bottom-nav">
+  <button onclick="location.href='index.html'">Dashboard</button>
+  <button onclick="location.href='add.html'">Add</button>
+  <button onclick="location.href='sell.html'">Sell</button>
+  <button onclick="location.href='history.html'">History</button>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>

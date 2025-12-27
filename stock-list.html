@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Stock List</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<!-- TOP NAV -->
+<div class="shop-nav" style="display:flex; align-items:center; gap:10px;">
+  <button onclick="history.back()" class="btn" style="width:auto; padding:8px 14px;">
+    ⬅ Back
+  </button>
+  <span style="flex:1; text-align:center;">Stock List</span>
+</div>
+
+<!-- CONTENT -->
+<div style="padding:20px; max-width:600px; margin:auto; padding-bottom:120px;">
+
+  <!-- SEARCH -->
+  <input
+    type="text"
+    id="searchItem"
+    class="search-bar"
+    placeholder="Search product..."
+    onkeyup="renderFilteredStock()"
+  >
+
+  <!-- LIST -->
+  <ul id="stockList" style="list-style:none; padding:0; margin-top:15px;"></ul>
+
+</div>
+
+<!-- BOTTOM NAV -->
+<div class="bottom-nav">
+  <button onclick="location.href='index.html'">Dashboard</button>
+  <button onclick="location.href='add.html'">Add</button>
+  <button onclick="location.href='sell.html'">Sell</button>
+  <button onclick="location.href='history.html'">History</button>
+</div>
+
+<script src="script.js"></script>
+<script>
+  renderFilteredStock();
+</script>
+
+</body>
+</html>
+   
