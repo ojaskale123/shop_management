@@ -95,10 +95,10 @@
 
 <!-- BOTTOM NAV -->
 <div class="bottom-nav">
-  <button onclick="location.href='index.html'">Dashboard</button>
-  <button onclick="location.href='add.html'">Add</button>
-  <button onclick="location.href='sell.html'">Sell</button>
-  <button onclick="location.href='history.html'">History</button>
+  <button onclick="location.href='index.html'">🖥️Home</button>
+  <button onclick="location.href='add.html'">➕ Add</button>
+  <button onclick="location.href='sell.html'">🛒 Sell</button>
+  <button onclick="location.href='history.html'">⌛Stats</button>
 </div>
 
 <script src="script.js"></script>
@@ -164,6 +164,19 @@ setInterval(() => {
 // INITIAL POPULATION
 filterHistory();
 </script>
+
+<script type="module">
+import { auth } from "./firebase.js";
+import { onAuthStateChanged }
+from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
+
+onAuthStateChanged(auth, (user) => {
+  if (!user) {
+    window.location.href = "login.html";
+  }
+});
+</script>
+
 
 </body>
 </html>
