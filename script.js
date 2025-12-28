@@ -3,9 +3,11 @@
 // ================================
 let stock = JSON.parse(localStorage.getItem("stock")) || [];
 let history = JSON.parse(localStorage.getItem("history")) || [];
+let groups = JSON.parse(localStorage.getItem("groups")) || [];
 
 // TEMP QUANTITIES FOR SELLING
 let sellQty = {};
+let groupIdCounter = groups.length ? Math.max(...groups.map(g => g.id)) + 1 : 1;
 
 // ================================
 // SAVE DATA
@@ -13,6 +15,7 @@ let sellQty = {};
 function saveData() {
   localStorage.setItem("stock", JSON.stringify(stock));
   localStorage.setItem("history", JSON.stringify(history));
+  localStorage.setItem("groups", JSON.stringify(groups));
 }
 
 // ================================
@@ -38,7 +41,6 @@ function addStock() {
     stock.push({ name, quantity, unit });
   }
 
-  // STORE DATE AS ISO STRING FOR CONSISTENT PARSING
   history.push({
     date: new Date().toISOString(),
     product: name,
@@ -60,70 +62,98 @@ function addStock() {
 // DASHBOARD COUNTS
 // ================================
 function updateDashboard() {
-  let totalItems = stock.length;
-  let outStockItems = stock.filter(i => i.quantity === 0).length;
-  let lowStockItems = stock.filter(i => i.quantity > 0 && i.quantity <= 10).length;
+  document.getElementById("totalStock").innerText = stock.length;
+  document.getElementById("outStock").innerText = stock.filter(i => i.quantity === 0).length;
+  document.getElementById("lowStock").innerText = stock.filter(i => i.quantity > 0 && i.quantity <= 10).length;
 
-  let t = document.getElementById("totalStock");
-  let o = document.getElementById("outStock");
-  let l = document.getElementById("lowStock");
-
-  if (t) t.innerText = totalItems;
-  if (o) o.innerText = outStockItems;
-  if (l) l.innerText = lowStockItems;
+  renderGroups();
 }
 
 // ================================
-// DASHBOARD → OPEN FILTERED LIST
+// DASHBOARD → GROUP CARDS (CHAI TEMPLATE)
 // ================================
-function openStockList(type) {
-  localStorage.setItem("stockViewType", type);
-  window.location.href = "stock-list.html";
+function addGroupCard() {
+  groups.push({ id: groupIdCounter++, amount: 0 });
+  saveData();
+  renderGroups();
 }
 
-// ================================
-// STOCK LIST PAGE LOGIC
-// ================================
-function renderFilteredStock() {
-  let type = localStorage.getItem("stockViewType") || "all";
-  let search = document.getElementById("searchItem")?.value.toLowerCase() || "";
-  let list = document.getElementById("stockList");
-  if (!list) return;
+function renderGroups() {
+  const container = document.getElementById("groupContainer");
+  if (!container) return;
+  container.innerHTML = "";
 
-  list.innerHTML = "";
+  groups.forEach(group => {
+    const div = document.createElement("div");
+    div.className = "group-card";
+    div.innerHTML = `
+      <strong>Group ${group.id}</strong>
+      <div style="display:flex; align-items:center; gap:5px; margin-top:5px;">
+        <button class="qty-btn" onclick="changeGroupAmount(${group.id}, -1)">−</button>
+        <input type="number" id="group-${group.id}" value="${group.amount}" 
+          oninput="manualGroupAmount(${group.id})" style="width:60px; text-align:center;">
+        <button class="qty-btn" onclick="changeGroupAmount(${group.id}, 1)">+</button>
+      </div>
+      <div style="display:flex; justify-content:space-between; margin-top:5px;">
+        <button class="btn" onclick="confirmGroup(${group.id})">Confirm</button>
+        <button class="btn" style="background:#ff4d4d;" onclick="deleteGroup(${group.id})">🗑️ Delete</button>
+      </div>
+    `;
+    container.appendChild(div);
+  });
+}
 
-  let filtered = stock.filter(item => {
-    if (type === "out") return item.quantity === 0;
-    if (type === "low") return item.quantity > 0 && item.quantity <= 10;
-    return true;
+function changeGroupAmount(id, change) {
+  const group = groups.find(g => g.id === id);
+  if (!group) return;
+  group.amount += change;
+  if (group.amount < 0) group.amount = 0;
+  document.getElementById(`group-${id}`).value = group.amount;
+  saveData();
+}
+
+function manualGroupAmount(id) {
+  const group = groups.find(g => g.id === id);
+  if (!group) return;
+  let val = parseFloat(document.getElementById(`group-${id}`).value);
+  if (isNaN(val) || val < 0) val = 0;
+  group.amount = val;
+  saveData();
+}
+
+function confirmGroup(id) {
+  const group = groups.find(g => g.id === id);
+  if (!group || group.amount <= 0) return alert("Enter an amount");
+
+  history.push({
+    date: new Date().toISOString(),
+    product: `Group ${group.id} Bill`,
+    quantity: 1,
+    unit: "bill",
+    type: "Chai",
+    amount: group.amount
   });
 
-  filtered
-    .filter(item => item.name.toLowerCase().includes(search))
-    .forEach(item => {
-      let li = document.createElement("li");
-      li.style.background = "#232323";
-      li.style.padding = "15px";
-      li.style.borderRadius = "12px";
-      li.style.marginBottom = "10px";
-      li.style.listStyle = "none";
+  alert(`Group ${group.id} confirmed: ₹${group.amount}`);
+  groups = groups.filter(g => g.id !== id);
+  saveData();
+  renderGroups();
+  filterHistory();
+}
 
-      li.innerHTML = `
-        <strong>${item.name}</strong><br>
-        <small>Available: ${item.quantity} ${item.unit}</small>
-      `;
-
-      if (item.quantity === 0) li.style.opacity = "0.6";
-
-      list.appendChild(li);
-    });
+function deleteGroup(id) {
+  if (confirm("Are you sure you want to delete this group?")) {
+    groups = groups.filter(g => g.id !== id);
+    saveData();
+    renderGroups();
+  }
 }
 
 // ================================
 // HISTORY PAGE
 // ================================
 function filterHistory() {
-  let filter = document.getElementById("filterType")?.value || "daily";
+  let filter = document.getElementById("filterType")?.value || "all";
   let search = document.getElementById("searchHistory")?.value.toLowerCase() || "";
   let list = document.getElementById("historyList");
   if (!list) return;
@@ -131,14 +161,12 @@ function filterHistory() {
   list.innerHTML = "";
   let now = new Date();
 
-  // SORT HISTORY DESCENDING
-  const sortedHistory = [...history].sort((a, b) => new Date(b.date) - new Date(a.date));
+  const sortedHistory = [...history].sort((a,b) => new Date(b.date) - new Date(a.date));
 
   sortedHistory
     .filter(record => {
       let recDate = new Date(record.date);
 
-      // FILTER BY TIME
       if (filter === "daily" && recDate.toDateString() !== now.toDateString()) return false;
       if (filter === "weekly") {
         const weekAgo = new Date();
@@ -149,10 +177,9 @@ function filterHistory() {
         if (recDate.getMonth() !== now.getMonth() || recDate.getFullYear() !== now.getFullYear()) return false;
       }
 
-      // SEARCH BY PRODUCT OR DATE
       if (search) {
         const dateStr = recDate.toLocaleString().toLowerCase();
-        if (!record.product.toLowerCase().includes(search) && !dateStr.includes(search)) return false;
+        if (!record.product.toLowerCase().includes(search) && !(dateStr.includes(search))) return false;
       }
 
       return true;
@@ -161,6 +188,7 @@ function filterHistory() {
       const li = document.createElement("li");
       li.innerHTML = `
         <strong>${record.product} (${record.type})</strong>
+        ${record.amount ? `<small>Amount: ₹${record.amount}</small>` : ""}
         <small>Quantity: ${record.quantity} ${record.unit}</small>
         <small>Date: ${new Date(record.date).toLocaleString()}</small>
       `;
@@ -168,23 +196,18 @@ function filterHistory() {
     });
 }
 
-// SEARCH BAR FUNCTION
 function searchHistory() {
   filterHistory();
 }
 
-// REAL-TIME UPDATES EVERY SECOND
-setInterval(() => {
-  filterHistory();
-}, 1000);
+setInterval(() => filterHistory(), 1000);
 
 // ================================
-// SELL PAGE FIXES
+// SELL PAGE
 // ================================
 let intervalSell;
 let currentChangeSell = null;
 
-// POPULATE SELL LIST
 function populateSell(list = stock) {
   const ul = document.getElementById("stockList");
   if (!ul) return;
@@ -226,7 +249,6 @@ function populateSell(list = stock) {
   });
 }
 
-// SELL QUANTITY FUNCTIONS
 function startChange(name, change) {
   currentChangeSell = {name, change};
   updateQty(name, change); // fix single-click
@@ -243,12 +265,8 @@ function updateQty(name, change) {
   if (!item) return;
 
   let next = (sellQty[name] || 0) + change;
-
-  if (item.unit === "kg" || item.unit === "g") {
-    next = Math.round(next * 10) / 10;
-  } else {
-    next = Math.round(next);
-  }
+  if (item.unit === "kg" || item.unit === "g") next = Math.round(next * 10) / 10;
+  else next = Math.round(next);
 
   if (next < 0) next = 0;
   if (next > item.quantity) next = item.quantity;
@@ -258,7 +276,6 @@ function updateQty(name, change) {
   if (el) el.value = next;
 }
 
-// MANUAL INPUT
 function manualQty(name, max, step) {
   let val = parseFloat(document.getElementById(`sellQty-${name}`).value);
   if (isNaN(val)) val = 0;
@@ -266,11 +283,8 @@ function manualQty(name, max, step) {
   const item = stock.find(i => i.name === name);
   if (!item) return;
 
-  if (item.unit === "kg" || item.unit === "g") {
-    val = Math.round(val * 10) / 10;
-  } else {
-    val = Math.round(val);
-  }
+  if (item.unit === "kg" || item.unit === "g") val = Math.round(val * 10) / 10;
+  else val = Math.round(val);
 
   if (val < 0) val = 0;
   if (val > item.quantity) val = item.quantity;
@@ -279,7 +293,6 @@ function manualQty(name, max, step) {
   document.getElementById(`sellQty-${name}`).value = val;
 }
 
-// CONFIRM SELL
 function confirmSell(name) {
   const qty = sellQty[name];
   if (!qty || qty <= 0) return alert("Select quantity to sell");
