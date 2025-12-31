@@ -11,8 +11,11 @@
 <div class="shop-nav">My Shop Name</div>
 
 <div style="padding: 20px; max-width:500px; margin:auto;">
+
+  <!-- PRODUCT NAME -->
   <input type="text" id="productName" placeholder="Product Name">
 
+  <!-- QUANTITY + UNIT -->
   <div style="display:flex; gap:10px; margin-top:10px;">
     <input type="number" id="productQuantity" placeholder="Quantity">
     <select id="unit">
@@ -22,9 +25,19 @@
     </select>
   </div>
 
+  <!-- PRICE -->
+  <input
+    type="number"
+    id="productPrice"
+    placeholder="Price per unit (₹)"
+    style="margin-top:10px;"
+  >
+
+  <!-- ADD BUTTON -->
   <button class="btn" onclick="addStock()">Add Stock</button>
 </div>
 
+<!-- BOTTOM NAV -->
 <div class="bottom-nav">
   <button onclick="location.href='index.html'">🖥️Home</button>
   <button onclick="location.href='add.html'">➕ Add</button>

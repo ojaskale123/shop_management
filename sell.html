@@ -3,10 +3,11 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Sell Stock</title>
+<title>Sell</title>
 <link rel="stylesheet" href="style.css">
+
 <style>
-/* =================== SELL PAGE SPECIFIC STYLES =================== */
+/* =================== SELL PAGE STYLES =================== */
 #stockList li {
   background: #232323;
   padding: 15px;
@@ -32,8 +33,6 @@
   font-size: 20px;
   padding: 10px 15px;
   cursor: pointer;
-  transition: 0.2s;
-  user-select: none;
 }
 
 .qty-btn:hover {
@@ -53,21 +52,21 @@
   background: #2c2c2c;
   border: none;
   border-radius: 8px;
-  width: 50px;
+  width: 60px;
   text-align: center;
 }
 </style>
 </head>
+
 <body>
 
 <div class="shop-nav">My Shop Name</div>
 
-<div style="padding:20px; max-width:700px; margin:auto; padding-bottom:150px;">
+<div style="padding:20px; max-width:700px; margin:auto; padding-bottom:200px;">
 
-  <!-- SEARCH -->
-  <input type="text" id="searchItem" class="search-bar" placeholder="Search item..." onkeyup="searchStock()">
+  <input type="text" id="searchItem" class="search-bar"
+    placeholder="Search item..." onkeyup="searchStock()">
 
-  <!-- STOCK LIST -->
   <ul id="stockList" style="list-style:none; padding:0; margin-top:15px;"></ul>
 
 </div>
@@ -76,32 +75,56 @@
 <div class="bottom-nav">
   <button onclick="location.href='index.html'">🖥️Home</button>
   <button onclick="location.href='add.html'">➕ Add</button>
-  <button onclick="location.href='sell.html'">🛒 Sell</button>
+  <button onclick="location.href='cart.html'">🛒 Cart</button>
   <button onclick="location.href='history.html'">⌛Stats</button>
 </div>
 
+<!-- CART BAR -->
+<div id="cartBar" style="
+  position: fixed;
+  bottom: 70px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 90%;
+  max-width: 700px;
+  background: #00a862;
+  color: #000;
+  padding: 12px 16px;
+  border-radius: 14px;
+  display: none;
+  justify-content: space-between;
+  align-items: center;
+  font-weight: bold;
+  z-index: 1000;
+">
+  <span id="cartInfo">0 items | ₹0</span>
+  <button onclick="goToCart()" style="
+    background:#000;
+    color:#00a862;
+    border:none;
+    padding:6px 12px;
+    border-radius:8px;
+    cursor:pointer;
+  ">View Cart</button>
+</div>
+
 <script src="script.js"></script>
+
 <script>
-// ==================== SELL PAGE FIXES ====================
+/* ================= CART LOGIC ================= */
 
-// TEMP QUANTITIES FOR SELLING
-let interval; 
-let currentChange = null;
+let cartQty = {};
+let interval;
 
-// POPULATE SELL LIST FIX
 function populateSell(list = stock) {
   const ul = document.getElementById("stockList");
   if (!ul) return;
 
   ul.innerHTML = "";
 
-  const filtered = list.filter(item => item.quantity > 0);
-
-  filtered.forEach(item => {
-    if (sellQty[item.name] === undefined) sellQty[item.name] = 0;
-
-    // Step based on unit
+  list.filter(i => i.quantity > 0).forEach(item => {
     const step = (item.unit === "kg" || item.unit === "g") ? 0.1 : 1;
+    if (cartQty[item.name] === undefined) cartQty[item.name] = 0;
 
     const li = document.createElement("li");
     li.innerHTML = `
@@ -109,97 +132,113 @@ function populateSell(list = stock) {
         <strong>${item.name}</strong>
         <small>Available: ${item.quantity} ${item.unit}</small>
       </div>
+
       <div style="display:flex; align-items:center; margin-top:10px;">
-        <button class="qty-btn" 
-          onmousedown="startChange('${item.name}', -${step})" 
-          onmouseup="stopChange()" 
-          onmouseleave="stopChange()" 
-          ontouchstart="startChange('${item.name}', -${step})" 
-          ontouchend="stopChange()">−</button>
-        <input id="sellQty-${item.name}" value="${sellQty[item.name]}" 
-          oninput="manualQty('${item.name}', ${item.quantity}, ${step})">
-        <button class="qty-btn" 
-          onmousedown="startChange('${item.name}', ${step})" 
-          onmouseup="stopChange()" 
-          onmouseleave="stopChange()" 
-          ontouchstart="startChange('${item.name}', ${step})" 
-          ontouchend="stopChange()">+</button>
+        <button class="qty-btn"
+          onmousedown="startChange('${item.name}', -${step})"
+          onmouseup="stopChange()" onmouseleave="stopChange()">−</button>
+
+        <input id="qty-${item.name}" value="${cartQty[item.name]}"
+          oninput="manualQty('${item.name}', ${item.quantity})">
+
+        <button class="qty-btn"
+          onmousedown="startChange('${item.name}', ${step})"
+          onmouseup="stopChange()" onmouseleave="stopChange()">+</button>
       </div>
-      <button class="btn" style="margin-top:10px;" onclick="confirmSell('${item.name}')">Confirm Sell</button>
+
+      <button class="btn" style="margin-top:10px;"
+        onclick="addToCart('${item.name}')">Add to Cart</button>
     `;
     ul.appendChild(li);
   });
 }
 
-// FIXED FUNCTIONS
 function startChange(name, change) {
-  currentChange = {name, change};
-  updateQty(name, change); // single click fix
+  updateQty(name, change);
   interval = setInterval(() => updateQty(name, change), 200);
 }
 
 function stopChange() {
   clearInterval(interval);
-  currentChange = null;
 }
 
 function updateQty(name, change) {
   const item = stock.find(i => i.name === name);
   if (!item) return;
 
-  let next = (sellQty[name] || 0) + change;
-
-  if (item.unit === "kg" || item.unit === "g") {
-    next = Math.round(next * 10) / 10;
-  } else {
-    next = Math.round(next);
-  }
+  let next = (cartQty[name] || 0) + change;
+  next = (item.unit === "kg" || item.unit === "g")
+    ? Math.round(next * 10) / 10
+    : Math.round(next);
 
   if (next < 0) next = 0;
   if (next > item.quantity) next = item.quantity;
 
-  sellQty[name] = next;
-  const el = document.getElementById(`sellQty-${name}`);
-  if (el) el.value = next;
+  cartQty[name] = next;
+  document.getElementById(`qty-${name}`).value = next;
 }
 
-// MANUAL INPUT
-function manualQty(name, max, step) {
-  let val = parseFloat(document.getElementById(`sellQty-${name}`).value);
-  if (isNaN(val)) val = 0;
+function manualQty(name, max) {
+  let val = parseFloat(document.getElementById(`qty-${name}`).value);
+  if (isNaN(val) || val < 0) val = 0;
+  if (val > max) val = max;
+  cartQty[name] = val;
+}
 
-  const item = stock.find(i => i.name === name);
-  if (!item) return;
+function addToCart(name) {
+  const qty = cartQty[name];
+  if (!qty) return;
 
-  if (item.unit === "kg" || item.unit === "g") {
-    val = Math.round(val * 10) / 10;
-  } else {
-    val = Math.round(val);
+  let cart = JSON.parse(localStorage.getItem("cart")) || {};
+  cart[name] = (cart[name] || 0) + qty;
+  localStorage.setItem("cart", JSON.stringify(cart));
+
+  cartQty[name] = 0;
+  document.getElementById(`qty-${name}`).value = 0;
+
+  updateCartBar();
+}
+
+function updateCartBar() {
+  let cart = JSON.parse(localStorage.getItem("cart")) || {};
+  let totalItems = 0;
+  let totalAmount = 0;
+
+  for (let name in cart) {
+    const item = stock.find(i => i.name === name);
+    if (item) {
+      totalItems += cart[name];
+      totalAmount += cart[name] * (item.price || 0);
+    }
   }
 
-  if (val < 0) val = 0;
-  if (val > item.quantity) val = item.quantity;
+  const bar = document.getElementById("cartBar");
+  const info = document.getElementById("cartInfo");
 
-  sellQty[name] = val;
-  document.getElementById(`sellQty-${name}`).value = val;
+  if (totalItems > 0) {
+    info.innerText = `${totalItems} items | ₹${totalAmount}`;
+    bar.style.display = "flex";
+  } else {
+    bar.style.display = "none";
+  }
 }
 
-// INITIAL POPULATION
+function goToCart() {
+  location.href = "cart.html";
+}
+
 populateSell();
+updateCartBar();
 </script>
 
 <script type="module">
 import { auth } from "./firebase.js";
-import { onAuthStateChanged }
-from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
+import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
 
 onAuthStateChanged(auth, (user) => {
-  if (!user) {
-    window.location.href = "login.html";
-  }
+  if (!user) window.location.href = "login.html";
 });
 </script>
-
 
 </body>
 </html>

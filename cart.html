@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Cart</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <!-- TOP BAR -->
+  <div class="shop-nav">🛒 Cart</div>
+
+  <div style="padding:15px; max-width:700px; margin:auto;">
+
+    <!-- BACK BUTTON -->
+    <button class="btn" style="margin-bottom:15px;" onclick="goBack()">← Back</button>
+
+    <!-- CART LIST -->
+    <ul id="cartList" style="list-style:none; padding:0;"></ul>
+
+    <!-- EMPTY CART MESSAGE -->
+    <div id="emptyCart" style="text-align:center; margin-top:40px; display:none;">
+      <strong>Cart is empty</strong>
+    </div>
+
+    <!-- CART SUMMARY -->
+    <div id="cartSummary" style="margin-top:20px; display:none;">
+      <hr />
+      <h3>Total Items: <span id="totalItems">0</span></h3>
+      <h2>Total Amount: ₹<span id="totalAmount">0</span></h2>
+
+      <button class="btn" style="width:100%; margin-top:10px;" onclick="checkoutCart()">
+        Mark as Paid
+      </button>
+    </div>
+
+  </div>
+
+  <!-- MAIN JS (ONLY THIS) -->
+  <script src="script.js"></script>
+
+  <!-- BACK FUNCTION -->
+  <script>
+    function goBack() {
+      window.location.href = "sell.html";
+    }
+  </script>
+
+</body>
+</html>
