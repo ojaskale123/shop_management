@@ -4,10 +4,8 @@
 let stock = JSON.parse(localStorage.getItem("stock")) || [];
 let history = JSON.parse(localStorage.getItem("history")) || [];
 let cart = JSON.parse(localStorage.getItem("cart")) || {}; 
-// cart format:
-// {
-//   "Rice": { qty: 2, price: 40, unit: "kg" }
-// }
+// standard cart format:
+// cart = { "Rice": { qty: 2, price: 40, unit: "kg" } }
 
 // ================================
 // ADD STOCK FUNCTION (add.html)
@@ -54,9 +52,7 @@ function populateSell(list = stock) {
 
   ul.innerHTML = "";
 
-  const filtered = list.filter(item => item.quantity > 0);
-
-  filtered.forEach(item => {
+  list.filter(item => item.quantity > 0).forEach(item => {
     if (!cart[item.name]) cart[item.name] = { qty: 0, price: item.price, unit: item.unit };
 
     const step = (item.unit === "kg" || item.unit === "g") ? 0.1 : 1;
@@ -131,7 +127,7 @@ function manualQty(name, max) {
 }
 
 // ================================
-// ADD TO CART (PRICE LOCKED HERE)
+// ADD TO CART
 // ================================
 function addToCart(name) {
   const selected = cart[name];
@@ -141,15 +137,9 @@ function addToCart(name) {
   }
 
   const existingCart = JSON.parse(localStorage.getItem("cart")) || {};
-  const item = stock.find(i => i.name === name);
-  if (!item) return;
 
   if (!existingCart[name]) {
-    existingCart[name] = {
-      qty: selected.qty,
-      price: item.price,
-      unit: item.unit
-    };
+    existingCart[name] = { ...selected };
   } else {
     existingCart[name].qty += selected.qty;
   }
@@ -189,12 +179,11 @@ function updateCartBar() {
 }
 
 function goToCart() {
-  if (document.getElementById("cartList")) renderCartPage();
-  else window.location.href = "cart.html";
+  window.location.href = "cart.html";
 }
 
 // ================================
-// CART PAGE (cart.html)
+// CART PAGE
 // ================================
 function renderCartPage() {
   const list = document.getElementById("cartList");
@@ -274,7 +263,10 @@ function removeCartItem(name) {
 // ================================
 function checkoutCart() {
   const currentCart = JSON.parse(localStorage.getItem("cart")) || {};
-  if (!Object.keys(currentCart).length) return;
+  if (Object.keys(currentCart).length === 0) return;
+
+  let totalItems = 0;
+  let totalAmount = 0;
 
   for (let name in currentCart) {
     const item = stock.find(i => i.name === name);
@@ -285,15 +277,18 @@ function checkoutCart() {
 
     item.quantity -= data.qty;
 
-    history.push({
-      date: new Date().toISOString(),
-      product: name,
-      quantity: data.qty,
-      unit: data.unit,
-      type: "Cart Sell",
-      amount
-    });
+    totalItems += data.qty;
+    totalAmount += amount;
   }
+
+  // Push history
+  history.push({
+    date: new Date().toLocaleString(),
+    items: currentCart,
+    totalItems,
+    totalAmount,
+    type: "Cart Sell"
+  });
 
   localStorage.removeItem("cart");
   localStorage.setItem("stock", JSON.stringify(stock));
