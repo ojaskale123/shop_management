@@ -12,12 +12,21 @@ let cart = JSON.parse(localStorage.getItem("cart")) || {};
 // ================================
 function addStock() {
   let name = document.getElementById("productName").value.trim();
+  let barcodeInput = document.getElementById("productBarcode");
+  let barcode = barcodeInput ? barcodeInput.value.trim() : "";
   let quantity = parseFloat(document.getElementById("productQuantity").value);
   let unit = document.getElementById("unit").value;
   let price = parseFloat(document.getElementById("productPrice").value);
 
-  if (!name || !quantity || isNaN(price)) {
-    alert("Enter valid name, quantity, and price");
+  if (!name || !barcode || !quantity || isNaN(price)) {
+    alert("Enter valid name, barcode, quantity, and price");
+    return;
+  }
+
+  // prevent duplicate barcode
+  let barcodeExists = stock.find(item => item.barcode === barcode);
+  if (barcodeExists) {
+    alert("This barcode already exists!");
     return;
   }
 
@@ -29,12 +38,13 @@ function addStock() {
     existing.quantity += quantity;
     existing.price = price;
   } else {
-    stock.push({ name, quantity, unit, price });
+    stock.push({ name, barcode, quantity, unit, price });
   }
 
   localStorage.setItem("stock", JSON.stringify(stock));
 
   document.getElementById("productName").value = "";
+  if (barcodeInput) barcodeInput.value = "";
   document.getElementById("productQuantity").value = "";
   document.getElementById("productPrice").value = "";
 
@@ -87,6 +97,42 @@ function populateSell(list = stock) {
     ul.appendChild(li);
   });
 }
+
+// ================================
+// BARCODE SCAN LOGIC (SELL PAGE)
+// ================================
+document.addEventListener("DOMContentLoaded", () => {
+  const barcodeInput = document.getElementById("barcodeInput");
+  if (!barcodeInput) return;
+
+  barcodeInput.focus();
+
+  barcodeInput.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      const code = barcodeInput.value.trim();
+      if (!code) return;
+
+      const item = stock.find(i => i.barcode === code);
+
+      if (!item) {
+        alert("Item not found for this barcode");
+        barcodeInput.value = "";
+        return;
+      }
+
+      if (!cart[item.name]) {
+        cart[item.name] = { qty: 0, price: item.price, unit: item.unit };
+      }
+
+      cart[item.name].qty += 1;
+      addToCart(item.name);
+
+      barcodeInput.value = "";
+      barcodeInput.focus();
+    }
+  });
+});
 
 function startChange(name, change) {
   updateQty(name, change);
@@ -281,7 +327,6 @@ function checkoutCart() {
     totalAmount += amount;
   }
 
-  // Push history
   history.push({
     date: new Date().toLocaleString(),
     items: currentCart,

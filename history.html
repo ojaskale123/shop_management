@@ -13,6 +13,12 @@
 <div style="padding:15px; max-width:700px; margin:auto;">
   <ul id="historyList" style="list-style:none; padding:0;"></ul>
 </div>
+<div class="bottom-nav">
+  <button onclick="location.href='index.html'">🖥️Home</button>
+  <button onclick="location.href='add.html'">➕ Add</button>
+  <button onclick="location.href='sell.html'">🛒 Sell</button>
+  <button onclick="location.href='history.html'">⌛Stats</button>
+</div>
 
 <script>
   const historyData = JSON.parse(localStorage.getItem("history")) || [];

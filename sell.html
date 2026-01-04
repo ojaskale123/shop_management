@@ -1,4 +1,4 @@
-<!DOCTYPE html><!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -63,8 +63,25 @@
 <div class="shop-nav">My Shop Name</div>
 
 <div style="padding:20px; max-width:700px; margin:auto; padding-bottom:200px;">
-  <input type="text" id="searchItem" class="search-bar"
-    placeholder="Search item..." onkeyup="searchStock()">
+
+  <!-- BARCODE SCAN INPUT -->
+  <input
+    type="text"
+    id="barcodeInput"
+    class="search-bar"
+    placeholder="Scan barcode..."
+    autocomplete="off"
+  >
+
+  <!-- SEARCH BAR (EXISTING) -->
+  <input
+    type="text"
+    id="searchItem"
+    class="search-bar"
+    placeholder="Search item..."
+    onkeyup="searchStock()"
+    style="margin-top:10px;"
+  >
 
   <ul id="stockList" style="list-style:none; padding:0; margin-top:15px;"></ul>
 </div>
@@ -73,7 +90,7 @@
 <div class="bottom-nav">
   <button onclick="location.href='index.html'">🖥️Home</button>
   <button onclick="location.href='add.html'">➕ Add</button>
-  <button onclick="location.href='cart.html'">🛒 Cart</button>
+  <button onclick="location.href='sell.html'">🛒 Sell</button>
   <button onclick="location.href='history.html'">⌛Stats</button>
 </div>
 
