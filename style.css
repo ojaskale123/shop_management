@@ -152,3 +152,9 @@ table th {
 .qty-btn:hover {
   background-color: #237050;
 }
+/* Sell page Add button fix */
+#stockList .btn {
+  width: auto;          /* don't stretch full width */
+  padding: 6px 12px;    /* smaller padding */
+  font-size: 14px;      /* smaller text */
+}

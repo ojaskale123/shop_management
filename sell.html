@@ -16,9 +16,40 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  flex-wrap: wrap;
+  flex-wrap: nowrap; /* 🔥 Fix misalignment */
+  position: relative; /* 🔥 needed for tooltip */
 }
 
+#stockList li > div:first-child {
+  flex: 1;
+  min-width: 0; /* 🔥 allow ellipsis to work */
+}
+
+#stockList strong {
+  font-size: 18px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis; /* 🔥 long names truncate */
+  cursor: default;
+}
+
+/* TOOLTIP ON HOVER */
+#stockList strong:hover::after {
+  content: attr(title);
+  white-space: normal;
+  background: #2c2c2c;
+  color: #fff;
+  padding: 4px 8px;
+  border-radius: 6px;
+  position: absolute;
+  top: -5px;
+  left: 0;
+  z-index: 1000;
+  max-width: 300px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.5);
+}
+
+/* inner divs and buttons */
 #stockList li div {
   display: flex;
   align-items: center;
@@ -37,10 +68,6 @@
 
 .qty-btn:hover {
   background-color: #00a862;
-}
-
-#stockList strong {
-  font-size: 18px;
 }
 
 #stockList small {

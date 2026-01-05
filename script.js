@@ -3,59 +3,42 @@
 // ================================
 let stock = JSON.parse(localStorage.getItem("stock")) || [];
 let history = JSON.parse(localStorage.getItem("history")) || [];
-let cart = JSON.parse(localStorage.getItem("cart")) || {}; 
-// standard cart format:
-// cart = { "Rice": { qty: 2, price: 40, unit: "kg" } }
+let cart = JSON.parse(localStorage.getItem("cart")) || {};
 
 // ================================
-// ADD STOCK FUNCTION (add.html)
+// ADD STOCK FUNCTION
 // ================================
 function addStock() {
   let name = document.getElementById("productName").value.trim();
-  let barcodeInput = document.getElementById("productBarcode");
-  let barcode = barcodeInput ? barcodeInput.value.trim() : "";
+  let barcode = document.getElementById("productBarcode").value.trim();
   let quantity = parseFloat(document.getElementById("productQuantity").value);
   let unit = document.getElementById("unit").value;
   let price = parseFloat(document.getElementById("productPrice").value);
 
   if (!name || !barcode || !quantity || isNaN(price)) {
-    alert("Enter valid name, barcode, quantity, and price");
+    alert("Enter valid details");
     return;
   }
 
-  // prevent duplicate barcode
-  let barcodeExists = stock.find(item => item.barcode === barcode);
-  if (barcodeExists) {
+  if (stock.find(i => i.barcode === barcode)) {
     alert("This barcode already exists!");
     return;
   }
 
-  let existing = stock.find(
-    item => item.name.toLowerCase() === name.toLowerCase() && item.unit === unit
-  );
-
-  if (existing) {
-    existing.quantity += quantity;
-    existing.price = price;
-  } else {
-    stock.push({ name, barcode, quantity, unit, price });
-  }
-
+  stock.push({ name, barcode, quantity, unit, price });
   localStorage.setItem("stock", JSON.stringify(stock));
 
+  alert("Stock added successfully!");
+
   document.getElementById("productName").value = "";
-  if (barcodeInput) barcodeInput.value = "";
+  document.getElementById("productBarcode").value = "";
   document.getElementById("productQuantity").value = "";
   document.getElementById("productPrice").value = "";
-
-  alert("Stock added successfully!");
 }
 
 // ================================
-// SELL PAGE FUNCTIONS (sell.html)
+// SELL PAGE LIST
 // ================================
-let intervalSell;
-
 function populateSell(list = stock) {
   const ul = document.getElementById("stockList");
   if (!ul) return;
@@ -63,43 +46,40 @@ function populateSell(list = stock) {
   ul.innerHTML = "";
 
   list.filter(item => item.quantity > 0).forEach(item => {
-    if (!cart[item.name]) cart[item.name] = { qty: 0, price: item.price, unit: item.unit };
+    if (!cart[item.barcode]) cart[item.barcode] = { qty: 0, price: item.price, unit: item.unit };
 
     const step = (item.unit === "kg" || item.unit === "g") ? 0.1 : 1;
 
     const li = document.createElement("li");
+    li.style.display = "flex";
+    li.style.justifyContent = "space-between";
+    li.style.alignItems = "center";
+    li.style.flexWrap = "wrap";
+    li.style.background = "#232323";
+    li.style.padding = "15px";
+    li.style.borderRadius = "12px";
+    li.style.marginBottom = "10px";
+
     li.innerHTML = `
-      <div style="flex:1; flex-direction: column;">
-        <strong>${item.name}</strong>
+      <div style="flex:1; min-width:0; display:flex; flex-direction:column; gap:4px;">
+        <strong title="${item.name}" style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${item.name}</strong>
         <small>Available: ${item.quantity} ${item.unit}</small>
         <small>Price: ₹${item.price}</small>
       </div>
 
-      <div style="display:flex; align-items:center; margin-top:10px;">
-        <button class="qty-btn"
-          onmousedown="startChange('${item.name}', -${step})"
-          onmouseup="stopChange()"
-          onmouseleave="stopChange()">−</button>
-
-        <input id="qty-${item.name}" value="${cart[item.name].qty}"
-          oninput="manualQty('${item.name}', ${item.quantity})">
-
-        <button class="qty-btn"
-          onmousedown="startChange('${item.name}', ${step})"
-          onmouseup="stopChange()"
-          onmouseleave="stopChange()">+</button>
+      <div style="display:flex; align-items:center; gap:10px; margin-top:10px;">
+        <button class="qty-btn" onclick="changeQty('${item.barcode}', -${step})">−</button>
+        <input id="qty-${item.barcode}" value="${cart[item.barcode].qty}" style="width:50px; text-align:center;">
+        <button class="qty-btn" onclick="changeQty('${item.barcode}', ${step})">+</button>
+        <button class="btn" onclick="addToCart('${item.barcode}')" style="width:auto; padding:10px 20px;">Add</button>
       </div>
-
-      <button class="btn" style="margin-top:10px;" onclick="addToCart('${item.name}')">
-        Add to Cart
-      </button>
     `;
     ul.appendChild(li);
   });
 }
 
 // ================================
-// BARCODE SCAN LOGIC (SELL PAGE)
+// BARCODE SCAN
 // ================================
 document.addEventListener("DOMContentLoaded", () => {
   const barcodeInput = document.getElementById("barcodeInput");
@@ -107,93 +87,78 @@ document.addEventListener("DOMContentLoaded", () => {
 
   barcodeInput.focus();
 
-  barcodeInput.addEventListener("keydown", (e) => {
+  barcodeInput.addEventListener("keydown", e => {
     if (e.key === "Enter") {
       e.preventDefault();
+
       const code = barcodeInput.value.trim();
       if (!code) return;
 
       const item = stock.find(i => i.barcode === code);
-
       if (!item) {
-        alert("Item not found for this barcode");
+        alert("Item not found");
         barcodeInput.value = "";
         return;
       }
 
-      if (!cart[item.name]) {
-        cart[item.name] = { qty: 0, price: item.price, unit: item.unit };
+      let liveCart = JSON.parse(localStorage.getItem("cart")) || {};
+
+      if (!liveCart[item.barcode]) {
+        liveCart[item.barcode] = { name: item.name, barcode: item.barcode, qty: 1, price: item.price, unit: item.unit };
+      } else {
+        liveCart[item.barcode].qty += 1;
       }
 
-      cart[item.name].qty += 1;
-      addToCart(item.name);
-
+      localStorage.setItem("cart", JSON.stringify(liveCart));
       barcodeInput.value = "";
-      barcodeInput.focus();
+      updateCartBar();
     }
   });
 });
 
-function startChange(name, change) {
-  updateQty(name, change);
-  intervalSell = setInterval(() => updateQty(name, change), 200);
-}
-
-function stopChange() {
-  clearInterval(intervalSell);
-}
-
-function updateQty(name, change) {
-  const item = stock.find(i => i.name === name);
+// ================================
+// MANUAL CART
+// ================================
+function changeQty(barcode, change) {
+  const item = stock.find(i => i.barcode === barcode);
   if (!item) return;
 
-  let next = (cart[name]?.qty || 0) + change;
+  if (!cart[barcode]) cart[barcode] = { qty: 0, price: item.price, unit: item.unit };
 
-  if (item.unit === "kg" || item.unit === "g")
-    next = Math.round(next * 10) / 10;
-  else
-    next = Math.round(next);
+  let next = cart[barcode].qty + change;
+
+  if (item.unit === "kg" || item.unit === "g") next = Math.round(next * 10) / 10;
+  else next = Math.round(next);
 
   if (next < 0) next = 0;
   if (next > item.quantity) next = item.quantity;
 
-  cart[name].qty = next;
-
-  const input = document.getElementById(`qty-${name}`);
+  cart[barcode].qty = next;
+  const input = document.getElementById(`qty-${barcode}`);
   if (input) input.value = next;
 }
 
-function manualQty(name, max) {
-  let val = parseFloat(document.getElementById(`qty-${name}`).value);
-  if (isNaN(val)) val = 0;
-  if (val < 0) val = 0;
-  if (val > max) val = max;
+function addToCart(barcode) {
+  const item = stock.find(i => i.barcode === barcode);
+  if (!item) return;
 
-  cart[name].qty = val;
-}
-
-// ================================
-// ADD TO CART
-// ================================
-function addToCart(name) {
-  const selected = cart[name];
-  if (!selected || selected.qty <= 0) {
-    alert("Select quantity first");
+  if (!cart[barcode] || cart[barcode].qty <= 0) {
+    alert("Select quantity");
     return;
   }
 
-  const existingCart = JSON.parse(localStorage.getItem("cart")) || {};
+  let liveCart = JSON.parse(localStorage.getItem("cart")) || {};
 
-  if (!existingCart[name]) {
-    existingCart[name] = { ...selected };
+  if (!liveCart[barcode]) {
+    liveCart[barcode] = { ...cart[barcode], name: item.name, barcode: item.barcode };
   } else {
-    existingCart[name].qty += selected.qty;
+    liveCart[barcode].qty += cart[barcode].qty;
   }
 
-  localStorage.setItem("cart", JSON.stringify(existingCart));
+  localStorage.setItem("cart", JSON.stringify(liveCart));
+  cart[barcode].qty = 0;
 
-  cart[name].qty = 0;
-  const input = document.getElementById(`qty-${name}`);
+  const input = document.getElementById(`qty-${barcode}`);
   if (input) input.value = 0;
 
   updateCartBar();
@@ -205,148 +170,33 @@ function addToCart(name) {
 function updateCartBar() {
   const bar = document.getElementById("cartBar");
   const info = document.getElementById("cartInfo");
-  if (!bar || !info) return;
+  if (!bar) return;
 
-  const currentCart = JSON.parse(localStorage.getItem("cart")) || {};
-  let totalItems = 0;
-  let totalAmount = 0;
+  const liveCart = JSON.parse(localStorage.getItem("cart")) || {};
+  let items = 0, amount = 0;
 
-  for (let name in currentCart) {
-    totalItems += currentCart[name].qty;
-    totalAmount += currentCart[name].qty * currentCart[name].price;
+  for (let k in liveCart) {
+    items += liveCart[k].qty;
+    amount += liveCart[k].qty * liveCart[k].price;
   }
 
-  if (totalItems > 0) {
+  if (items > 0) {
     bar.style.display = "flex";
-    info.innerText = `${totalItems} items | ₹${totalAmount}`;
+    info.innerText = `${items} items | ₹${amount}`;
   } else {
     bar.style.display = "none";
   }
 }
 
+// ================================
+// GO TO CART PAGE
+// ================================
 function goToCart() {
   window.location.href = "cart.html";
-}
-
-// ================================
-// CART PAGE
-// ================================
-function renderCartPage() {
-  const list = document.getElementById("cartList");
-  const empty = document.getElementById("emptyCart");
-  const summary = document.getElementById("cartSummary");
-  if (!list || !empty || !summary) return;
-
-  const currentCart = JSON.parse(localStorage.getItem("cart")) || {};
-  const names = Object.keys(currentCart);
-
-  list.innerHTML = "";
-
-  if (names.length === 0) {
-    empty.style.display = "block";
-    summary.style.display = "none";
-    return;
-  }
-
-  empty.style.display = "none";
-  summary.style.display = "block";
-
-  let totalItems = 0;
-  let totalAmount = 0;
-
-  names.forEach(name => {
-    const data = currentCart[name];
-    const amount = data.qty * data.price;
-
-    totalItems += data.qty;
-    totalAmount += amount;
-
-    const li = document.createElement("li");
-    li.innerHTML = `
-      <strong>${name}</strong>
-      <div style="display:flex; justify-content:space-between;">
-        <span>₹${data.price} × ${data.qty}</span>
-        <span>₹${amount}</span>
-      </div>
-
-      <div style="display:flex; gap:6px; margin-top:8px;">
-        <button class="qty-btn" onclick="changeCartQty('${name}', -1)">−</button>
-        <span>${data.qty}</span>
-        <button class="qty-btn" onclick="changeCartQty('${name}', 1)">+</button>
-        <button class="btn" style="background:#ff4d4d; margin-left:auto;"
-          onclick="removeCartItem('${name}')">Remove</button>
-      </div>
-    `;
-    list.appendChild(li);
-  });
-
-  document.getElementById("totalItems").innerText = totalItems;
-  document.getElementById("totalAmount").innerText = totalAmount;
-}
-
-function changeCartQty(name, change) {
-  const currentCart = JSON.parse(localStorage.getItem("cart")) || {};
-  if (!currentCart[name]) return;
-
-  currentCart[name].qty += change;
-  if (currentCart[name].qty <= 0) delete currentCart[name];
-
-  localStorage.setItem("cart", JSON.stringify(currentCart));
-  renderCartPage();
-  updateCartBar();
-}
-
-function removeCartItem(name) {
-  const currentCart = JSON.parse(localStorage.getItem("cart")) || {};
-  delete currentCart[name];
-  localStorage.setItem("cart", JSON.stringify(currentCart));
-  renderCartPage();
-  updateCartBar();
-}
-
-// ================================
-// CHECKOUT
-// ================================
-function checkoutCart() {
-  const currentCart = JSON.parse(localStorage.getItem("cart")) || {};
-  if (Object.keys(currentCart).length === 0) return;
-
-  let totalItems = 0;
-  let totalAmount = 0;
-
-  for (let name in currentCart) {
-    const item = stock.find(i => i.name === name);
-    if (!item) continue;
-
-    const data = currentCart[name];
-    const amount = data.qty * data.price;
-
-    item.quantity -= data.qty;
-
-    totalItems += data.qty;
-    totalAmount += amount;
-  }
-
-  history.push({
-    date: new Date().toLocaleString(),
-    items: currentCart,
-    totalItems,
-    totalAmount,
-    type: "Cart Sell"
-  });
-
-  localStorage.removeItem("cart");
-  localStorage.setItem("stock", JSON.stringify(stock));
-  localStorage.setItem("history", JSON.stringify(history));
-
-  renderCartPage();
-  updateCartBar();
-  alert("Payment marked as paid ✔");
 }
 
 // ================================
 // INIT
 // ================================
 updateCartBar();
-if (document.getElementById("cartList")) renderCartPage();
 if (document.getElementById("stockList")) populateSell();

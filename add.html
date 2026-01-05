@@ -12,10 +12,8 @@
 
 <div style="padding: 20px; max-width:500px; margin:auto;">
 
-  <!-- PRODUCT NAME -->
   <input type="text" id="productName" placeholder="Product Name">
 
-  <!-- BARCODE -->
   <input
     type="text"
     id="productBarcode"
@@ -23,7 +21,6 @@
     style="margin-top:10px;"
   >
 
-  <!-- QUANTITY + UNIT -->
   <div style="display:flex; gap:10px; margin-top:10px;">
     <input type="number" id="productQuantity" placeholder="Quantity">
     <select id="unit">
@@ -33,7 +30,6 @@
     </select>
   </div>
 
-  <!-- PRICE -->
   <input
     type="number"
     id="productPrice"
@@ -41,11 +37,9 @@
     style="margin-top:10px;"
   >
 
-  <!-- ADD BUTTON -->
   <button class="btn" onclick="addStock()">Add Stock</button>
 </div>
 
-<!-- BOTTOM NAV -->
 <div class="bottom-nav">
   <button onclick="location.href='index.html'">🖥️Home</button>
   <button onclick="location.href='add.html'">➕ Add</button>
@@ -54,18 +48,5 @@
 </div>
 
 <script src="script.js"></script>
-
-<script type="module">
-import { auth } from "./firebase.js";
-import { onAuthStateChanged }
-from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
-
-onAuthStateChanged(auth, (user) => {
-  if (!user) {
-    window.location.href = "login.html";
-  }
-});
-</script>
-
 </body>
 </html>
