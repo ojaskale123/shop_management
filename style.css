@@ -158,3 +158,35 @@ table th {
   padding: 6px 12px;    /* smaller padding */
   font-size: 14px;      /* smaller text */
 }
+/* STOCK CARD FIX */
+#stockList li {
+  background: #232323;
+  padding: 15px;
+  border-radius: 12px;
+  margin-bottom: 10px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+}
+
+/* LEFT SIDE (NAME + PRICE) */
+#stockList li .item-info {
+  flex: 1;
+  min-width: 0;           /* 🔥 MOST IMPORTANT */
+}
+
+/* ITEM NAME */
+#stockList li .item-info strong {
+  display: block;
+  max-width: 100%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis; /* 🔥 THREE DOTS */
+  font-size: 18px;
+}
+
+/* PRICE / STOCK TEXT */
+#stockList li small {
+  color: #aaa;
+}
