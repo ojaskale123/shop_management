@@ -6,6 +6,43 @@ let history = JSON.parse(localStorage.getItem("history")) || [];
 let cart = JSON.parse(localStorage.getItem("cart")) || {};
 
 // ================================
+// ADD / REFILL STOCK FUNCTION
+// ================================
+function addStock() {
+  let name = document.getElementById("productName").value.trim();
+  let barcode = document.getElementById("productBarcode").value.trim();
+  let quantity = parseFloat(document.getElementById("productQuantity").value);
+  let unit = document.getElementById("unit").value;
+  let price = parseFloat(document.getElementById("productPrice").value);
+
+  if (!name || !barcode || !quantity || isNaN(price)) {
+    alert("Enter valid details");
+    return;
+  }
+
+  const existing = stock.find(i => i.barcode === barcode);
+  if (existing) {
+    // If same barcode exists, just increase quantity and optionally update other info
+    existing.quantity += quantity;
+    existing.name = name; // update name if changed
+    existing.unit = unit; // update unit if changed
+    existing.price = price; // update price if changed
+    localStorage.setItem("stock", JSON.stringify(stock));
+    alert("Stock updated successfully!");
+  } else {
+    stock.push({ name, barcode, quantity, unit, price });
+    localStorage.setItem("stock", JSON.stringify(stock));
+    alert("Stock added successfully!");
+  }
+
+  // Clear input fields
+  document.getElementById("productName").value = "";
+  document.getElementById("productBarcode").value = "";
+  document.getElementById("productQuantity").value = "";
+  document.getElementById("productPrice").value = "";
+}
+
+// ================================
 // SELL PAGE LIST
 // ================================
 function populateSell(list = stock) {
@@ -50,74 +87,50 @@ function editItem(barcode) {
   const item = stock.find(i => i.barcode === barcode);
   if (!item) return;
 
-  // Create modal container
-  const modal = document.createElement("div");
-  modal.id = "editModal";
-  modal.style = `
-    position: fixed; top:0; left:0; width:100%; height:100%; 
-    background: rgba(0,0,0,0.7); display:flex; justify-content:center; align-items:center; z-index:10000;
-  `;
+  let newName = prompt("Edit Name:", item.name);
+  if (newName === null) return;
 
-  // Modal inner content
-  modal.innerHTML = `
-    <div style="background:#232323; padding:20px; border-radius:12px; width:90%; max-width:400px; color:#fff;">
-      <h3>Edit Item</h3>
-      <label>Name:</label>
-      <input type="text" id="editName" value="${item.name}" style="width:100%; margin-bottom:10px;">
-      <label>Barcode:</label>
-      <input type="text" id="editBarcode" value="${item.barcode}" style="width:100%; margin-bottom:10px;">
-      <label>Quantity:</label>
-      <input type="number" id="editQuantity" value="${item.quantity}" style="width:100%; margin-bottom:10px;">
-      <label>Price:</label>
-      <input type="number" id="editPrice" value="${item.price || 0}" style="width:100%; margin-bottom:10px;">
-      <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:10px;">
-        <button id="editCancel" style="padding:8px 15px; border:none; border-radius:6px; cursor:pointer;">Cancel</button>
-        <button id="editSave" style="padding:8px 15px; border:none; border-radius:6px; cursor:pointer; background:#00a862; color:#000;">Save</button>
-      </div>
-    </div>
-  `;
+  let newBarcode = prompt("Edit Barcode:", item.barcode);
+  if (newBarcode === null) return;
 
-  document.body.appendChild(modal);
+  let newQuantity = prompt("Edit Quantity:", item.quantity);
+  if (newQuantity === null) return;
 
-  // Cancel button
-  document.getElementById("editCancel").onclick = () => {
-    modal.remove();
-  };
+  let newPrice = prompt("Edit Price:", item.price);
+  if (newPrice === null) return;
 
-  // Save button
-  document.getElementById("editSave").onclick = () => {
-    let newName = document.getElementById("editName").value.trim() || item.name;
-    let newBarcode = document.getElementById("editBarcode").value.trim() || item.barcode;
-    let newQuantity = Number(document.getElementById("editQuantity").value);
-    if (isNaN(newQuantity) || newQuantity < 0) newQuantity = item.quantity;
-    let newPrice = Number(document.getElementById("editPrice").value);
-    if (isNaN(newPrice) || newPrice < 0) newPrice = item.price;
+  newQuantity = Number(newQuantity);
+  newPrice = Number(newPrice);
 
-    // Update item
-    item.name = newName;
-    item.barcode = newBarcode;
-    item.quantity = newQuantity;
-    item.price = newPrice;
+  if (!newName || !newBarcode || isNaN(newQuantity) || newQuantity < 0 || isNaN(newPrice) || newPrice < 0) {
+    alert("Invalid input");
+    return;
+  }
 
-    localStorage.setItem("stock", JSON.stringify(stock));
+  // Update stock
+  item.name = newName;
+  item.barcode = newBarcode;
+  item.quantity = newQuantity;
+  item.price = newPrice;
 
-    // Update cart if exists
-    let liveCart = JSON.parse(localStorage.getItem("cart")) || {};
-    if (liveCart[barcode]) {
-      liveCart[newBarcode] = {
-        ...liveCart[barcode],
-        name: newName,
-        barcode: newBarcode,
-        price: newPrice
-      };
-      if (newBarcode !== barcode) delete liveCart[barcode];
-      localStorage.setItem("cart", JSON.stringify(liveCart));
-    }
+  localStorage.setItem("stock", JSON.stringify(stock));
 
-    modal.remove();
-    populateSell();
-    updateCartBar();
-  };
+  // Update cart if exists
+  let liveCart = JSON.parse(localStorage.getItem("cart")) || {};
+  if (liveCart[barcode]) {
+    liveCart[newBarcode] = {
+      name: newName,
+      barcode: newBarcode,
+      qty: liveCart[barcode].qty,
+      price: newPrice,
+      unit: item.unit
+    };
+    if (newBarcode !== barcode) delete liveCart[barcode];
+    localStorage.setItem("cart", JSON.stringify(liveCart));
+  }
+
+  populateSell();
+  updateCartBar();
 }
 
 // ================================
@@ -132,6 +145,7 @@ document.addEventListener("DOMContentLoaded", () => {
   barcodeInput.addEventListener("keydown", e => {
     if (e.key === "Enter") {
       e.preventDefault();
+
       const code = barcodeInput.value.trim();
       if (!code) return;
 
@@ -151,7 +165,13 @@ document.addEventListener("DOMContentLoaded", () => {
 
       let liveCart = JSON.parse(localStorage.getItem("cart")) || {};
       if (!liveCart[item.barcode]) {
-        liveCart[item.barcode] = { name: item.name, barcode: item.barcode, qty: 1, price: item.price, unit: item.unit };
+        liveCart[item.barcode] = {
+          name: item.name,
+          barcode: item.barcode,
+          qty: 1,
+          price: item.price,
+          unit: item.unit
+        };
       } else {
         liveCart[item.barcode].qty += 1;
       }
