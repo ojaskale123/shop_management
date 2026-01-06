@@ -16,24 +16,23 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  flex-wrap: nowrap; /* 🔥 Fix misalignment */
-  position: relative; /* 🔥 needed for tooltip */
+  flex-wrap: nowrap;
+  position: relative;
 }
 
 #stockList li > div:first-child {
   flex: 1;
-  min-width: 0; /* 🔥 allow ellipsis to work */
+  min-width: 0;
 }
 
 #stockList strong {
   font-size: 18px;
   white-space: nowrap;
   overflow: hidden;
-  text-overflow: ellipsis; /* 🔥 long names truncate */
-  cursor: default;
+  text-overflow: ellipsis;
 }
 
-/* TOOLTIP ON HOVER */
+/* TOOLTIP */
 #stockList strong:hover::after {
   content: attr(title);
   white-space: normal;
@@ -45,11 +44,8 @@
   top: -5px;
   left: 0;
   z-index: 1000;
-  max-width: 300px;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.5);
 }
 
-/* inner divs and buttons */
 #stockList li div {
   display: flex;
   align-items: center;
@@ -70,17 +66,24 @@
   background-color: #00a862;
 }
 
-#stockList small {
-  color: #aaa;
+/* EDIT BUTTON */
+.edit-btn {
+  background: #444;
+  color: #fff;
+  border: none;
+  padding: 6px 10px;
+  border-radius: 8px;
+  font-size: 12px;
+  cursor: pointer;
 }
 
-#stockList input {
-  color: #fff;
-  background: #2c2c2c;
-  border: none;
-  border-radius: 8px;
-  width: 60px;
-  text-align: center;
+.edit-btn:hover {
+  background: #ff9800;
+  color: #000;
+}
+
+#stockList small {
+  color: #aaa;
 }
 </style>
 </head>
@@ -91,24 +94,8 @@
 
 <div style="padding:20px; max-width:700px; margin:auto; padding-bottom:200px;">
 
-  <!-- BARCODE SCAN INPUT -->
-  <input
-    type="text"
-    id="barcodeInput"
-    class="search-bar"
-    placeholder="Scan barcode..."
-    autocomplete="off"
-  >
-
-  <!-- SEARCH BAR (EXISTING) -->
-  <input
-    type="text"
-    id="searchItem"
-    class="search-bar"
-    placeholder="Search item..."
-    onkeyup="searchStock()"
-    style="margin-top:10px;"
-  >
+  <input type="text" id="searchItem" class="search-bar"
+    placeholder="Search item..." onkeyup="searchStock()">
 
   <ul id="stockList" style="list-style:none; padding:0; margin-top:15px;"></ul>
 </div>
@@ -137,29 +124,11 @@
   justify-content: space-between;
   align-items: center;
   font-weight: bold;
-  z-index: 1000;
 ">
   <span id="cartInfo">0 items | ₹0</span>
-  <button onclick="goToCart()" style="
-    background:#000;
-    color:#00a862;
-    border:none;
-    padding:6px 12px;
-    border-radius:8px;
-    cursor:pointer;
-  ">View Cart</button>
+  <button onclick="goToCart()">View Cart</button>
 </div>
 
 <script src="script.js"></script>
-
-<script type="module">
-import { auth } from "./firebase.js";
-import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
-
-onAuthStateChanged(auth, (user) => {
-  if (!user) window.location.href = "login.html";
-});
-</script>
-
 </body>
 </html>

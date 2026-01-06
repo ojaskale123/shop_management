@@ -46,7 +46,9 @@ function populateSell(list = stock) {
   ul.innerHTML = "";
 
   list.filter(item => item.quantity > 0).forEach(item => {
-    if (!cart[item.barcode]) cart[item.barcode] = { qty: 0, price: item.price, unit: item.unit };
+    if (!cart[item.barcode]) {
+      cart[item.barcode] = { qty: 0, price: item.price, unit: item.unit };
+    }
 
     const step = (item.unit === "kg" || item.unit === "g") ? 0.1 : 1;
 
@@ -62,20 +64,62 @@ function populateSell(list = stock) {
 
     li.innerHTML = `
       <div style="flex:1; min-width:0; display:flex; flex-direction:column; gap:4px;">
-        <strong title="${item.name}" style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${item.name}</strong>
+        <strong title="${item.name}" style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
+          ${item.name}
+        </strong>
         <small>Available: ${item.quantity} ${item.unit}</small>
-        <small>Price: ₹${item.price}</small>
+        <small>
+          Price: ₹${item.price || "Not Set"}
+          <button onclick="editPrice('${item.barcode}')" 
+            style="margin-left:8px; padding:4px 8px; border:none; border-radius:6px; cursor:pointer;">
+            ✏
+          </button>
+        </small>
       </div>
 
       <div style="display:flex; align-items:center; gap:10px; margin-top:10px;">
         <button class="qty-btn" onclick="changeQty('${item.barcode}', -${step})">−</button>
         <input id="qty-${item.barcode}" value="${cart[item.barcode].qty}" style="width:50px; text-align:center;">
         <button class="qty-btn" onclick="changeQty('${item.barcode}', ${step})">+</button>
-        <button class="btn" onclick="addToCart('${item.barcode}')" style="width:auto; padding:10px 20px;">Add</button>
+        <button class="btn" onclick="addToCart('${item.barcode}')" style="width:auto; padding:10px 20px;">
+          Add
+        </button>
       </div>
     `;
+
     ul.appendChild(li);
   });
+}
+
+// ================================
+// EDIT PRICE (SELL PAGE)
+// ================================
+function editPrice(barcode) {
+  const item = stock.find(i => i.barcode === barcode);
+  if (!item) return;
+
+  let newPrice = prompt(`Set price for ${item.name}`, item.price || "");
+  if (newPrice === null) return;
+
+  newPrice = Number(newPrice);
+  if (isNaN(newPrice) || newPrice < 0) {
+    alert("Invalid price");
+    return;
+  }
+
+  // update stock
+  item.price = newPrice;
+  localStorage.setItem("stock", JSON.stringify(stock));
+
+  // update cart price if exists
+  let liveCart = JSON.parse(localStorage.getItem("cart")) || {};
+  if (liveCart[barcode]) {
+    liveCart[barcode].price = newPrice;
+    localStorage.setItem("cart", JSON.stringify(liveCart));
+  }
+
+  populateSell();
+  updateCartBar();
 }
 
 // ================================
@@ -101,10 +145,23 @@ document.addEventListener("DOMContentLoaded", () => {
         return;
       }
 
+      if (!item.price || item.price === 0) {
+        alert("Please set price first");
+        editPrice(item.barcode);
+        barcodeInput.value = "";
+        return;
+      }
+
       let liveCart = JSON.parse(localStorage.getItem("cart")) || {};
 
       if (!liveCart[item.barcode]) {
-        liveCart[item.barcode] = { name: item.name, barcode: item.barcode, qty: 1, price: item.price, unit: item.unit };
+        liveCart[item.barcode] = {
+          name: item.name,
+          barcode: item.barcode,
+          qty: 1,
+          price: item.price,
+          unit: item.unit
+        };
       } else {
         liveCart[item.barcode].qty += 1;
       }
@@ -141,6 +198,12 @@ function changeQty(barcode, change) {
 function addToCart(barcode) {
   const item = stock.find(i => i.barcode === barcode);
   if (!item) return;
+
+  if (!item.price || item.price === 0) {
+    alert("Please set price first");
+    editPrice(barcode);
+    return;
+  }
 
   if (!cart[barcode] || cart[barcode].qty <= 0) {
     alert("Select quantity");
@@ -192,6 +255,13 @@ function updateCartBar() {
 // GO TO CART PAGE
 // ================================
 function goToCart() {
+  const liveCart = JSON.parse(localStorage.getItem("cart")) || {};
+  for (let k in liveCart) {
+    if (!liveCart[k].price || liveCart[k].price === 0) {
+      alert("Please set price for all items");
+      return;
+    }
+  }
   window.location.href = "cart.html";
 }
 
