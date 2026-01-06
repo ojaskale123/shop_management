@@ -270,3 +270,17 @@ function goToCart() {
 // ================================
 updateCartBar();
 if (document.getElementById("stockList")) populateSell();
+// ================================
+// SELL PAGE SEARCH
+// ================================
+function searchStock() {
+  const input = document.getElementById("searchItem");
+  if (!input) return;
+
+  const query = input.value.toLowerCase();
+  const filtered = stock.filter(item =>
+    item.name.toLowerCase().includes(query)
+  );
+
+  populateSell(filtered);
+}
