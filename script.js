@@ -1,14 +1,28 @@
+import { auth } from "./firebase.js";
+import { loadUserData, saveUserData } from "./data.js";
+
 // ================================
-// LOAD DATA
+// LOAD DATA (FROM FIRESTORE)
 // ================================
-let stock = JSON.parse(localStorage.getItem("stock")) || [];
-let history = JSON.parse(localStorage.getItem("history")) || [];
-let cart = JSON.parse(localStorage.getItem("cart")) || {};
+let stock = [];
+let history = [];
+let cart = {};
+
+async function loadAllData() {
+  stock = await loadUserData("stock");
+  history = await loadUserData("history");
+  cart = await loadUserData("cart");
+
+  updateCartBar();
+  if (document.getElementById("stockList")) populateSell();
+}
+
+loadAllData();
 
 // ================================
 // ADD / REFILL STOCK FUNCTION
 // ================================
-function addStock() {
+async function addStock() {
   let name = document.getElementById("productName").value.trim();
   let barcode = document.getElementById("productBarcode").value.trim();
   let quantity = parseFloat(document.getElementById("productQuantity").value);
@@ -22,20 +36,18 @@ function addStock() {
 
   const existing = stock.find(i => i.barcode === barcode);
   if (existing) {
-    // If same barcode exists, just increase quantity and optionally update other info
     existing.quantity += quantity;
-    existing.name = name; // update name if changed
-    existing.unit = unit; // update unit if changed
-    existing.price = price; // update price if changed
-    localStorage.setItem("stock", JSON.stringify(stock));
+    existing.name = name;
+    existing.unit = unit;
+    existing.price = price;
     alert("Stock updated successfully!");
   } else {
     stock.push({ name, barcode, quantity, unit, price });
-    localStorage.setItem("stock", JSON.stringify(stock));
     alert("Stock added successfully!");
   }
 
-  // Clear input fields
+  await saveUserData("stock", stock);
+
   document.getElementById("productName").value = "";
   document.getElementById("productBarcode").value = "";
   document.getElementById("productQuantity").value = "";
@@ -52,10 +64,11 @@ function populateSell(list = stock) {
   ul.innerHTML = "";
 
   list.filter(item => item.quantity > 0).forEach(item => {
-    if (!cart[item.barcode]) cart[item.barcode] = { qty: 0, price: item.price, unit: item.unit };
+    if (!cart[item.barcode]) {
+      cart[item.barcode] = { qty: 0, price: item.price, unit: item.unit };
+    }
 
     const step = (item.unit === "kg" || item.unit === "g") ? 0.1 : 1;
-
     const li = document.createElement("li");
 
     li.innerHTML = `
@@ -75,15 +88,14 @@ function populateSell(list = stock) {
         <button class="btn" onclick="addToCart('${item.barcode}')">Add</button>
       </div>
     `;
-
     ul.appendChild(li);
   });
 }
 
 // ================================
-// EDIT ITEM (SELL PAGE)
+// EDIT ITEM
 // ================================
-function editItem(barcode) {
+async function editItem(barcode) {
   const item = stock.find(i => i.barcode === barcode);
   if (!item) return;
 
@@ -93,42 +105,26 @@ function editItem(barcode) {
   let newBarcode = prompt("Edit Barcode:", item.barcode);
   if (newBarcode === null) return;
 
-  let newQuantity = prompt("Edit Quantity:", item.quantity);
-  if (newQuantity === null) return;
+  let newQuantity = Number(prompt("Edit Quantity:", item.quantity));
+  let newPrice = Number(prompt("Edit Price:", item.price));
 
-  let newPrice = prompt("Edit Price:", item.price);
-  if (newPrice === null) return;
-
-  newQuantity = Number(newQuantity);
-  newPrice = Number(newPrice);
-
-  if (!newName || !newBarcode || isNaN(newQuantity) || newQuantity < 0 || isNaN(newPrice) || newPrice < 0) {
+  if (!newName || isNaN(newQuantity) || newQuantity < 0 || isNaN(newPrice) || newPrice < 0) {
     alert("Invalid input");
     return;
   }
 
-  // Update stock
   item.name = newName;
   item.barcode = newBarcode;
   item.quantity = newQuantity;
   item.price = newPrice;
 
-  localStorage.setItem("stock", JSON.stringify(stock));
-
-  // Update cart if exists
-  let liveCart = JSON.parse(localStorage.getItem("cart")) || {};
-  if (liveCart[barcode]) {
-    liveCart[newBarcode] = {
-      name: newName,
-      barcode: newBarcode,
-      qty: liveCart[barcode].qty,
-      price: newPrice,
-      unit: item.unit
-    };
-    if (newBarcode !== barcode) delete liveCart[barcode];
-    localStorage.setItem("cart", JSON.stringify(liveCart));
+  if (cart[barcode]) {
+    cart[newBarcode] = { ...cart[barcode], price: newPrice };
+    if (newBarcode !== barcode) delete cart[barcode];
+    await saveUserData("cart", cart);
   }
 
+  await saveUserData("stock", stock);
   populateSell();
   updateCartBar();
 }
@@ -142,7 +138,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   barcodeInput.focus();
 
-  barcodeInput.addEventListener("keydown", e => {
+  barcodeInput.addEventListener("keydown", async e => {
     if (e.key === "Enter") {
       e.preventDefault();
 
@@ -163,9 +159,8 @@ document.addEventListener("DOMContentLoaded", () => {
         return;
       }
 
-      let liveCart = JSON.parse(localStorage.getItem("cart")) || {};
-      if (!liveCart[item.barcode]) {
-        liveCart[item.barcode] = {
+      if (!cart[item.barcode]) {
+        cart[item.barcode] = {
           name: item.name,
           barcode: item.barcode,
           qty: 1,
@@ -173,10 +168,10 @@ document.addEventListener("DOMContentLoaded", () => {
           unit: item.unit
         };
       } else {
-        liveCart[item.barcode].qty += 1;
+        cart[item.barcode].qty += 1;
       }
 
-      localStorage.setItem("cart", JSON.stringify(liveCart));
+      await saveUserData("cart", cart);
       barcodeInput.value = "";
       updateCartBar();
     }
@@ -193,8 +188,9 @@ function changeQty(barcode, change) {
   if (!cart[barcode]) cart[barcode] = { qty: 0, price: item.price, unit: item.unit };
 
   let next = cart[barcode].qty + change;
-  if (item.unit === "kg" || item.unit === "g") next = Math.round(next * 10) / 10;
-  else next = Math.round(next);
+  next = (item.unit === "kg" || item.unit === "g")
+    ? Math.round(next * 10) / 10
+    : Math.round(next);
 
   if (next < 0) next = 0;
   if (next > item.quantity) next = item.quantity;
@@ -204,29 +200,17 @@ function changeQty(barcode, change) {
   if (input) input.value = next;
 }
 
-function addToCart(barcode) {
+async function addToCart(barcode) {
   const item = stock.find(i => i.barcode === barcode);
-  if (!item) return;
-
-  if (!item.price || item.price === 0) {
-    alert("Please set price first");
-    editItem(barcode);
-    return;
-  }
-
-  if (!cart[barcode] || cart[barcode].qty <= 0) {
+  if (!item || !cart[barcode] || cart[barcode].qty <= 0) {
     alert("Select quantity");
     return;
   }
 
-  let liveCart = JSON.parse(localStorage.getItem("cart")) || {};
-  if (!liveCart[barcode]) {
-    liveCart[barcode] = { ...cart[barcode], name: item.name, barcode: item.barcode };
-  } else {
-    liveCart[barcode].qty += cart[barcode].qty;
-  }
+  cart[barcode].name = item.name;
+  cart[barcode].barcode = item.barcode;
 
-  localStorage.setItem("cart", JSON.stringify(liveCart));
+  await saveUserData("cart", cart);
   cart[barcode].qty = 0;
 
   const input = document.getElementById(`qty-${barcode}`);
@@ -243,12 +227,10 @@ function updateCartBar() {
   const info = document.getElementById("cartInfo");
   if (!bar) return;
 
-  const liveCart = JSON.parse(localStorage.getItem("cart")) || {};
   let items = 0, amount = 0;
-
-  for (let k in liveCart) {
-    items += liveCart[k].qty;
-    amount += liveCart[k].qty * liveCart[k].price;
+  for (let k in cart) {
+    items += cart[k].qty;
+    amount += cart[k].qty * cart[k].price;
   }
 
   if (items > 0) {
@@ -263,21 +245,14 @@ function updateCartBar() {
 // GO TO CART PAGE
 // ================================
 function goToCart() {
-  const liveCart = JSON.parse(localStorage.getItem("cart")) || {};
-  for (let k in liveCart) {
-    if (!liveCart[k].price || liveCart[k].price === 0) {
+  for (let k in cart) {
+    if (!cart[k].price || cart[k].price === 0) {
       alert("Please set price for all items");
       return;
     }
   }
   window.location.href = "cart.html";
 }
-
-// ================================
-// INIT
-// ================================
-updateCartBar();
-if (document.getElementById("stockList")) populateSell();
 
 // ================================
 // SELL PAGE SEARCH
@@ -290,6 +265,5 @@ function searchStock() {
   const filtered = stock.filter(item =>
     item.name.toLowerCase().includes(query)
   );
-
   populateSell(filtered);
 }
