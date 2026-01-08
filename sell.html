@@ -3,133 +3,33 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Sell</title>
+<title>Sell Items</title>
 <link rel="stylesheet" href="style.css">
-
-<style>
-/* =================== SELL PAGE STYLES =================== */
-#stockList li {
-  background: #232323;
-  padding: 15px;
-  border-radius: 12px;
-  margin-bottom: 10px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 10px;
-  flex-wrap: wrap;
-}
-
-#stockList li .item-info {
-  flex: 1;
-  min-width: 0;  /* allows shrinking for ellipsis */
-}
-
-#stockList li .item-info strong {
-  display: block;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  font-size: 18px;
-}
-
-#stockList li .item-info small {
-  color: #aaa;
-}
-
-/* EDIT BUTTON */
-.edit-btn {
-  background: #444;
-  color: #fff;
-  border: none;
-  padding: 4px 8px;
-  border-radius: 6px;
-  font-size: 12px;
-  cursor: pointer;
-}
-
-.edit-btn:hover {
-  background: #ff9800;
-  color: #000;
-}
-</style>
+<script type="module" src="script.js" defer></script>
 </head>
-
 <body>
+<header>
+  <h1>Sell Items</h1>
+</header>
 
-<div class="shop-nav">STOCK MANAGEMENT</div>
+<section class="scan-section">
+  <label>Scan Barcode: <input type="text" id="barcodeInput" autofocus></label>
+</section>
 
-<div style="padding:20px; max-width:700px; margin:auto; padding-bottom:200px;">
+<section class="stock-list">
+  <ul id="stockList"></ul>
+</section>
 
-  <!-- BARCODE SCAN INPUT -->
-  <input
-    type="text"
-    id="barcodeInput"
-    class="search-bar"
-    placeholder="Scan barcode..."
-    autocomplete="off"
-    style="margin-bottom:10px;"
-  >
-
-  <!-- SEARCH BAR -->
-  <input
-    type="text"
-    id="searchItem"
-    class="search-bar"
-    placeholder="Search item..."
-    onkeyup="searchStock()"
-  >
-
-  <ul id="stockList" style="list-style:none; padding:0; margin-top:15px;"></ul>
+<div id="cartBar" style="display:none; position:fixed; bottom:10px; left:10px; background:#232323; padding:10px; border-radius:12px;">
+  <span id="cartInfo"></span>
+  <a href="cart.html"><button>Go to Cart</button></a>
 </div>
 
-<!-- BOTTOM NAV -->
-<div class="bottom-nav">
-  <button onclick="location.href='index.html'">🖥️Home</button>
-  <button onclick="location.href='add.html'">➕ Add</button>
-  <button onclick="location.href='sell.html'">🛒 Sell</button>
-  <button onclick="location.href='history.html'">⌛Stats</button>
-</div>
-
-<!-- CART BAR -->
-<div id="cartBar" style="
-  position: fixed;
-  bottom: 70px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 90%;
-  max-width: 700px;
-  background: #00a862;
-  color: #000;
-  padding: 12px 16px;
-  border-radius: 14px;
-  display: none;
-  justify-content: space-between;
-  align-items: center;
-  font-weight: bold;
-  z-index: 1000;
-">
-  <span id="cartInfo">0 items | ₹0</span>
-  <button onclick="goToCart()" style="
-    background:#000;
-    color:#00a862;
-    border:none;
-    padding:6px 12px;
-    border-radius:8px;
-    cursor:pointer;
-  ">View Cart</button>
-</div>
-
-<script src="script.js"></script>
-
-<script type="module">
-import { auth } from "./firebase.js";
-import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
-
-onAuthStateChanged(auth, (user) => {
-  if (!user) window.location.href = "login.html";
-});
-</script>
-
+<nav class="main-nav">
+  <a href="index.html">Dashboard</a>
+  <a href="add.html">Add Stock</a>
+  <a href="cart.html">Cart</a>
+  <a href="history.html">History</a>
+</nav>
 </body>
 </html>

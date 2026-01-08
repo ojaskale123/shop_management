@@ -1,46 +1,26 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>History</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link rel="stylesheet" href="style.css">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>History</title>
+<link rel="stylesheet" href="style.css">
+<script type="module" src="script.js" defer></script>
 </head>
 <body>
+<header>
+  <h1>History</h1>
+</header>
 
-<div class="shop-nav">📜 History</div>
+<section class="history-list">
+  <ul id="historyList"></ul>
+</section>
 
-<div style="padding:15px; max-width:700px; margin:auto;">
-  <ul id="historyList" style="list-style:none; padding:0;"></ul>
-</div>
-<div class="bottom-nav">
-  <button onclick="location.href='index.html'">🖥️Home</button>
-  <button onclick="location.href='add.html'">➕ Add</button>
-  <button onclick="location.href='sell.html'">🛒 Sell</button>
-  <button onclick="location.href='history.html'">⌛Stats</button>
-</div>
-
-<script>
-  const historyData = JSON.parse(localStorage.getItem("history")) || [];
-  const list = document.getElementById("historyList");
-
-  if (historyData.length === 0) {
-    list.innerHTML = "<p>No history available</p>";
-  } else {
-    historyData.reverse().forEach(h => {
-      const li = document.createElement("li");
-      li.style.marginBottom = "12px";
-
-      li.innerHTML = `
-        <strong>${h.type}</strong><br>
-        <small>${h.date}</small><br>
-        <span>${h.totalItems} items × ₹${h.totalAmount}</span>
-        <hr>
-      `;
-      list.appendChild(li);
-    });
-  }
-</script>
-
+<nav class="main-nav">
+  <a href="index.html">Dashboard</a>
+  <a href="add.html">Add Stock</a>
+  <a href="sell.html">Sell Items</a>
+  <a href="cart.html">Cart</a>
+</nav>
 </body>
 </html>
