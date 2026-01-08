@@ -54,7 +54,7 @@ function addStock() {
   document.getElementById("productQuantity").value = "";
   document.getElementById("productPrice").value = "";
 
-  updateDashboard(); // Update dashboard after stock change
+  updateDashboard();
 }
 
 // ================================
@@ -108,7 +108,7 @@ function populateSell(list = stock) {
 
       <div style="display:flex; align-items:center; gap:10px; margin-top:10px;">
         <button class="qty-btn" onclick="changeQty('${item.barcode}', -${step})">−</button>
-        <input id="qty-${item.barcode}" value="${cart[item.barcode].qty}" style="width:50px; text-align:center;">
+        <input id="qty-${item.barcode}" value="${cart[item.barcode].qty}" style="width:50px; text-align:center;" oninput="manualQty('${item.barcode}', this.value)">
         <button class="qty-btn" onclick="changeQty('${item.barcode}', ${step})">+</button>
         <button class="btn" onclick="addToCart('${item.barcode}')">Add</button>
       </div>
@@ -116,6 +116,21 @@ function populateSell(list = stock) {
 
     ul.appendChild(li);
   });
+}
+
+// ================================
+// MANUAL INPUT CHANGE
+// ================================
+function manualQty(barcode, value) {
+  const item = stock.find(i => i.barcode === barcode);
+  if (!item) return;
+
+  let num = parseFloat(value);
+  if (isNaN(num) || num < 0) num = 0;
+  if (num > item.quantity) num = item.quantity;
+
+  if (!cart[barcode]) cart[barcode] = { qty: 0, price: item.price, unit: item.unit };
+  cart[barcode].qty = num;
 }
 
 // ================================
@@ -159,7 +174,7 @@ function addToCart(barcode) {
   cart[barcode].qty = 0;
   localStorage.setItem("cart", JSON.stringify(liveCart));
   updateCartBar();
-  populateSell(); // ensure input resets in sell page
+  populateSell();
 }
 
 // ================================
@@ -245,6 +260,9 @@ function renderCartPage() {
   document.getElementById("totalAmount").innerText = totalAmount;
 }
 
+// ================================
+// REST FUNCTIONS: CHANGE CART QTY, REMOVE, CHECKOUT
+// ================================
 function changeCartQty(barcode, change) {
   const currentCart = JSON.parse(localStorage.getItem("cart")) || {};
   if (!currentCart[barcode]) return;
@@ -290,7 +308,7 @@ function checkoutCart() {
 
   renderCartPage();
   updateCartBar();
-  updateDashboard(); // update stock counters
+  updateDashboard();
   alert("Payment marked as paid ✔");
 }
 
