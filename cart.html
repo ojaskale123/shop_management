@@ -36,127 +36,133 @@
   <button onclick="location.href='history.html'">⌛Stats</button>
 </div>
 
-<script type="module" src="script.js"></script>
+<!-- 🔥 IMPORTANT: NO type="module" -->
+<script src="script.js"></script>
 
 <script>
-  function goBack() {
-    window.location.href = "sell.html";
+function goBack() {
+  window.location.href = "sell.html";
+}
+
+// ================================
+// RENDER CART
+// ================================
+function renderCartPage() {
+  const list = document.getElementById("cartList");
+  const empty = document.getElementById("emptyCart");
+  const summary = document.getElementById("cartSummary");
+
+  const currentCart = JSON.parse(localStorage.getItem("cart")) || {};
+  const keys = Object.keys(currentCart);
+
+  list.innerHTML = "";
+
+  if (keys.length === 0) {
+    empty.style.display = "block";
+    summary.style.display = "none";
+    return;
   }
 
-  // ================================
-  // CART PAGE LOGIC
-  // ================================
-  function renderCartPage() {
-    const list = document.getElementById("cartList");
-    const empty = document.getElementById("emptyCart");
-    const summary = document.getElementById("cartSummary");
-    if (!list || !empty || !summary) return;
+  empty.style.display = "none";
+  summary.style.display = "block";
 
-    const currentCart = JSON.parse(localStorage.getItem("cart")) || {};
-    const itemKeys = Object.keys(currentCart);
+  let totalItems = 0;
+  let totalAmount = 0;
 
-    list.innerHTML = "";
+  keys.forEach(barcode => {
+    const data = currentCart[barcode];
+    const amount = data.qty * data.price;
 
-    if (itemKeys.length === 0) {
-      empty.style.display = "block";
-      summary.style.display = "none";
-      return;
-    }
+    totalItems += data.qty;
+    totalAmount += amount;
 
-    empty.style.display = "none";
-    summary.style.display = "block";
+    const li = document.createElement("li");
+    li.style.background = "#232323";
+    li.style.padding = "12px";
+    li.style.borderRadius = "12px";
+    li.style.marginBottom = "10px";
 
-    let totalItems = 0;
-    let totalAmount = 0;
+    li.innerHTML = `
+      <strong>${data.name}</strong>
+      <div style="display:flex; justify-content:space-between; margin-top:5px;">
+        <span>₹${data.price} × ${data.qty} ${data.unit}</span>
+        <span>₹${amount}</span>
+      </div>
+      <div style="display:flex; gap:6px; margin-top:8px; align-items:center;">
+        <button class="qty-btn" onclick="changeCartQty('${barcode}', -1)">−</button>
+        <span>${data.qty}</span>
+        <button class="qty-btn" onclick="changeCartQty('${barcode}', 1)">+</button>
+        <button class="btn" style="background:#ff4d4d; margin-left:auto;" onclick="removeCartItem('${barcode}')">Remove</button>
+      </div>
+    `;
+    list.appendChild(li);
+  });
 
-    itemKeys.forEach(name => {
-      const data = currentCart[name];
-      const amount = data.qty * data.price;
+  document.getElementById("totalItems").innerText = totalItems;
+  document.getElementById("totalAmount").innerText = totalAmount;
+}
 
-      totalItems += data.qty;
-      totalAmount += amount;
+// ================================
+// CART CONTROLS
+// ================================
+function changeCartQty(barcode, change) {
+  const currentCart = JSON.parse(localStorage.getItem("cart")) || {};
+  if (!currentCart[barcode]) return;
 
-      const li = document.createElement("li");
-      li.style.background = "#232323";
-      li.style.padding = "12px";
-      li.style.borderRadius = "12px";
-      li.style.marginBottom = "10px";
+  currentCart[barcode].qty += change;
+  if (currentCart[barcode].qty <= 0) delete currentCart[barcode];
 
-      li.innerHTML = `
-        <strong>${name}</strong>
-        <div style="display:flex; justify-content:space-between; margin-top:5px;">
-          <span>₹${data.price} × ${data.qty} ${data.unit}</span>
-          <span>₹${amount}</span>
-        </div>
-        <div style="display:flex; gap:6px; margin-top:8px; align-items:center;">
-          <button class="qty-btn" onclick="changeCartQty('${name}', -1)">−</button>
-          <span>${data.qty}</span>
-          <button class="qty-btn" onclick="changeCartQty('${name}', 1)">+</button>
-          <button class="btn" style="background:#ff4d4d; margin-left:auto;" onclick="removeCartItem('${name}')">Remove</button>
-        </div>
-      `;
-      list.appendChild(li);
-    });
+  localStorage.setItem("cart", JSON.stringify(currentCart));
+  renderCartPage();
+  updateCartBar();
+}
 
-    document.getElementById("totalItems").innerText = totalItems;
-    document.getElementById("totalAmount").innerText = totalAmount;
+function removeCartItem(barcode) {
+  const currentCart = JSON.parse(localStorage.getItem("cart")) || {};
+  delete currentCart[barcode];
+  localStorage.setItem("cart", JSON.stringify(currentCart));
+  renderCartPage();
+  updateCartBar();
+}
+
+// ================================
+// CHECKOUT (HISTORY + STOCK FIX)
+// ================================
+function checkoutCart() {
+  const currentCart = JSON.parse(localStorage.getItem("cart")) || {};
+  if (Object.keys(currentCart).length === 0) return;
+
+  let totalItems = 0;
+  let totalAmount = 0;
+
+  for (let barcode in currentCart) {
+    const data = currentCart[barcode];
+    const item = stock.find(i => i.barcode === barcode);
+    if (!item) continue;
+
+    item.quantity -= data.qty;
+    totalItems += data.qty;
+    totalAmount += data.qty * data.price;
   }
 
-  function changeCartQty(name, change) {
-    const currentCart = JSON.parse(localStorage.getItem("cart")) || {};
-    if (!currentCart[name]) return;
+  history.push({
+    type: "Sale",
+    date: new Date().toLocaleString(),
+    totalItems,
+    totalAmount,
+    items: currentCart
+  });
 
-    currentCart[name].qty += change;
-    if (currentCart[name].qty <= 0) delete currentCart[name];
-
-    localStorage.setItem("cart", JSON.stringify(currentCart));
-    renderCartPage();
-    updateCartBar();
-  }
-
-  function removeCartItem(name) {
-    const currentCart = JSON.parse(localStorage.getItem("cart")) || {};
-    delete currentCart[name];
-    localStorage.setItem("cart", JSON.stringify(currentCart));
-    renderCartPage();
-    updateCartBar();
-  }
-
-  function checkoutCart() {
-    const currentCart = JSON.parse(localStorage.getItem("cart")) || {};
-    if (Object.keys(currentCart).length === 0) return;
-
-    let totalItems = 0;
-    let totalAmount = 0;
-
-    Object.keys(currentCart).forEach(name => {
-      const data = currentCart[name];
-      const item = stock.find(i => i.name === name);
-      if (!item) return;
-
-      item.quantity -= data.qty;
-      totalItems += data.qty;
-      totalAmount += data.qty * data.price;
-    });
-
-    history.push({
-      date: new Date().toLocaleString(),
-      items: currentCart,
-      totalItems,
-      totalAmount,
-      type: "Cart Sell"
-    });
-
-    localStorage.removeItem("cart");
-    localStorage.setItem("stock", JSON.stringify(stock));
-    localStorage.setItem("history", JSON.stringify(history));
-
-    renderCartPage();
-    updateCartBar();
-    alert("Payment marked as paid ✔");
-  }
+  localStorage.setItem("stock", JSON.stringify(stock));
+  localStorage.setItem("history", JSON.stringify(history));
+  localStorage.removeItem("cart");
 
   renderCartPage();
+  updateCartBar();
+  alert("Payment marked as paid ✔");
+}
+
+renderCartPage();
 </script>
 
 </body>
