@@ -26,7 +26,7 @@ body {
   box-shadow: 0 4px 12px rgba(255, 255, 255, 0.4);
 }
 
-/* ===== CARDS ===== */
+
 /* ===================== DASHBOARD CARDS ===================== */
 .card {
   background: #232323;
@@ -36,38 +36,101 @@ body {
   text-align: center;
   width: 150px;
   cursor: pointer;
-  box-shadow: 0 4px 12px rgba(255, 255, 255, 0.15); /* subtle white shadow */
+  box-shadow: 0 4px 12px rgba(221, 221, 221, 0.5);
   transition: transform 0.2s, box-shadow 0.2s;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  font-weight: 500;
 }
 
 .card:hover {
   transform: translateY(-4px);
-  box-shadow: 0 8px 20px rgba(255, 255, 255, 0.25); /* stronger on hover */
+  box-shadow: 0 8px 20px rgba(0,0,0,0.6);
 }
 
 .card span {
   display: block;
-  font-size: 28px;
+  font-size: 24px;
   margin-top: 10px;
   font-weight: bold;
-  color: #00a862; /* keeps your accent color for numbers */
 }
 
-/* Responsive for small screens */
-@media screen and (max-width: 500px) {
-  .card {
-    width: 120px;
-    padding: 15px;
-  }
+/* ===================== STOCK POPUP ===================== */
+#popup {
+  display: none;
+  position: fixed;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  background: #1a1818;
+  color: #fff;
+  padding: 20px;
+  border-radius: 16px;
+  width: 90%;
+  max-width: 400px;
+  max-height: 70%;
+  overflow-y: auto;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.6);
+  z-index: 1000;
+}
 
-  .card span {
-    font-size: 22px;
-  }
+#popup h3 {
+  text-align: center;
+  margin-bottom: 15px;
+}
+
+#popup ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+#popup li {
+  display: flex;
+  justify-content: space-between;
+  padding: 10px 12px;
+  margin-bottom: 8px;
+  border-radius: 12px;
+  background: #2a2828;
+  align-items: center;
+  font-size: 14px;
+}
+
+#popup li span.badge {
+  padding: 3px 8px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: bold;
+}
+
+/* Badge colors */
+#popup li .badge.ok {
+  background: #00a862;
+  color: #000;
+}
+
+#popup li .badge.low {
+  background: #ffa500;
+  color: #000;
+}
+
+#popup li .badge.out {
+  background: #ff4d4d;
+  color: #fff;
+}
+
+/* Close button */
+#popup button {
+  margin-top: 15px;
+  width: 100%;
+  padding: 10px;
+  border-radius: 12px;
+  border: none;
+  background-color: #00a862;
+  color: #000;
+  cursor: pointer;
+  font-weight: bold;
+  font-size: 14px;
+}
+
+#popup button:hover {
+  opacity: 0.9;
 }
 
 /* ===== NAVBAR ===== */
