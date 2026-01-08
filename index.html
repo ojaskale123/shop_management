@@ -10,7 +10,8 @@
 
 <div class="shop-nav">Stock Management</div>
 
-<div style="display:flex; flex-wrap:wrap; justify-content: center; gap:20px; margin-top:20px;">
+<!-- CARDS CONTAINER -->
+<div class="cards-container">
   <div class="card" onclick="showList('all')">
     Total Products<br><span id="totalStock">0</span>
   </div>
@@ -29,6 +30,7 @@
   <button onclick="closePopup()">Close</button>
 </div>
 
+<!-- BOTTOM NAV -->
 <div class="bottom-nav">
   <button onclick="location.href='index.html'">🖥️ Home</button>
   <button onclick="location.href='add.html'">➕ Add</button>
@@ -36,6 +38,7 @@
   <button onclick="location.href='history.html'">⌛ Stats</button>
 </div>
 
+<!-- AUTH CHECK -->
 <script type="module">
 import { auth } from "./firebase.js";
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
@@ -47,6 +50,7 @@ onAuthStateChanged(auth, (user) => {
 });
 </script>
 
+<!-- MAIN SCRIPT -->
 <script src="script.js"></script>
 
 </body>

@@ -26,8 +26,16 @@ body {
   box-shadow: 0 4px 12px rgba(255, 255, 255, 0.4);
 }
 
-/* ===== CARDS ===== */
-/* ===================== DASHBOARD CARDS ===================== */
+/* ===== DASHBOARD CARDS CONTAINER ===== */
+.cards-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 20px;
+  justify-items: center;
+  margin-top: 20px;
+}
+
+/* ===== DASHBOARD CARDS ===== */
 .card {
   background: #232323;
   color: #fff;
@@ -36,13 +44,13 @@ body {
   text-align: center;
   width: 150px;
   cursor: pointer;
-  box-shadow: 0 4px 12px rgba(255, 255, 255, 0.1); /* subtle white shadow for popup feel */
+  box-shadow: 0 4px 12px rgba(255, 255, 255, 0.1);
   transition: transform 0.2s, box-shadow 0.2s;
 }
 
 .card:hover {
   transform: translateY(-4px);
-  box-shadow: 0 8px 20px rgba(255, 255, 255, 0.2); /* glow on hover */
+  box-shadow: 0 8px 20px rgba(255, 255, 255, 0.2);
 }
 
 .card span {
@@ -52,7 +60,7 @@ body {
   font-weight: bold;
 }
 
-/* ===================== STOCK STATUS COLORS ===================== */
+/* ===== STOCK STATUS COLORS ===== */
 #totalStock {
   color: #00a862; /* green */
 }
@@ -182,7 +190,7 @@ body {
 
 /* ===== BUTTONS (ADD & SELL PAGE) ===== */
 .btn {
-  background-color: #237050; /* PERMANENT GREEN */
+  background-color: #237050;
   border: none;
   padding: 15px 30px;
   border-radius: 12px;
@@ -195,7 +203,7 @@ body {
 }
 
 .btn:hover {
-  background-color: #237050; /* SAME GREEN */
+  background-color: #237050;
 }
 
 /* ===== INPUTS ===== */
@@ -240,7 +248,7 @@ table th {
 
 /* ===== PLUS/MINUS BUTTONS (SELL PAGE) ===== */
 .qty-btn {
-  background-color: #237050; /* PERMANENT GREEN */
+  background-color: #237050;
   color: #fff;
   border: none;
   border-radius: 12px;
@@ -254,12 +262,14 @@ table th {
 .qty-btn:hover {
   background-color: #237050;
 }
+
 /* Sell page Add button fix */
 #stockList .btn {
-  width: auto;          /* don't stretch full width */
-  padding: 6px 12px;    /* smaller padding */
-  font-size: 14px;      /* smaller text */
+  width: auto;
+  padding: 6px 12px;
+  font-size: 14px;
 }
+
 /* STOCK CARD FIX */
 #stockList li {
   background: #232323;
@@ -275,7 +285,7 @@ table th {
 /* LEFT SIDE (NAME + PRICE) */
 #stockList li .item-info {
   flex: 1;
-  min-width: 0;           /* 🔥 MOST IMPORTANT */
+  min-width: 0;
 }
 
 /* ITEM NAME */
@@ -284,7 +294,7 @@ table th {
   max-width: 100%;
   white-space: nowrap;
   overflow: hidden;
-  text-overflow: ellipsis; /* 🔥 THREE DOTS */
+  text-overflow: ellipsis;
   font-size: 18px;
 }
 
