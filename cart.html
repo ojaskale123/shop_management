@@ -1,32 +1,163 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Cart</title>
-<link rel="stylesheet" href="style.css">
-<script type="module" src="script.js" defer></script>
+  <meta charset="UTF-8" />
+  <title>Cart</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-<header>
-  <h1>Cart</h1>
-</header>
 
-<section id="emptyCart" style="display:block;">Your cart is empty</section>
+<div class="shop-nav">🛒 Cart</div>
 
-<section id="cartSummary" style="display:none;">
-  <ul id="cartList"></ul>
-  <div>
-    Total Items: <span id="totalItems">0</span> |
-    Total Amount: ₹<span id="totalAmount">0</span>
+<div style="padding:15px; max-width:700px; margin:auto;">
+  <button class="btn" style="margin-bottom:15px;" onclick="goBack()">← Back</button>
+
+  <ul id="cartList" style="list-style:none; padding:0;"></ul>
+
+  <div id="emptyCart" style="text-align:center; margin-top:40px; display:none;">
+    <strong>Cart is empty</strong>
   </div>
-</section>
 
-<nav class="main-nav">
-  <a href="index.html">Dashboard</a>
-  <a href="add.html">Add Stock</a>
-  <a href="sell.html">Sell Items</a>
-  <a href="history.html">History</a>
-</nav>
+  <div id="cartSummary" style="margin-top:20px; display:none;">
+    <hr />
+    <h3>Total Items: <span id="totalItems">0</span></h3>
+    <h2>Total Amount: ₹<span id="totalAmount">0</span></h2>
+    <button class="btn" style="width:100%; margin-top:10px;" onclick="checkoutCart()">
+      Mark as Paid
+    </button>
+  </div>
+</div>
+
+<div class="bottom-nav">
+  <button onclick="location.href='index.html'">🖥️Home</button>
+  <button onclick="location.href='add.html'">➕ Add</button>
+  <button onclick="location.href='sell.html'">🛒 Sell</button>
+  <button onclick="location.href='history.html'">⌛Stats</button>
+</div>
+
+<script type="module" src="script.js"></script>
+
+<script>
+  function goBack() {
+    window.location.href = "sell.html";
+  }
+
+  // ================================
+  // CART PAGE LOGIC
+  // ================================
+  function renderCartPage() {
+    const list = document.getElementById("cartList");
+    const empty = document.getElementById("emptyCart");
+    const summary = document.getElementById("cartSummary");
+    if (!list || !empty || !summary) return;
+
+    const currentCart = JSON.parse(localStorage.getItem("cart")) || {};
+    const itemKeys = Object.keys(currentCart);
+
+    list.innerHTML = "";
+
+    if (itemKeys.length === 0) {
+      empty.style.display = "block";
+      summary.style.display = "none";
+      return;
+    }
+
+    empty.style.display = "none";
+    summary.style.display = "block";
+
+    let totalItems = 0;
+    let totalAmount = 0;
+
+    itemKeys.forEach(name => {
+      const data = currentCart[name];
+      const amount = data.qty * data.price;
+
+      totalItems += data.qty;
+      totalAmount += amount;
+
+      const li = document.createElement("li");
+      li.style.background = "#232323";
+      li.style.padding = "12px";
+      li.style.borderRadius = "12px";
+      li.style.marginBottom = "10px";
+
+      li.innerHTML = `
+        <strong>${name}</strong>
+        <div style="display:flex; justify-content:space-between; margin-top:5px;">
+          <span>₹${data.price} × ${data.qty} ${data.unit}</span>
+          <span>₹${amount}</span>
+        </div>
+        <div style="display:flex; gap:6px; margin-top:8px; align-items:center;">
+          <button class="qty-btn" onclick="changeCartQty('${name}', -1)">−</button>
+          <span>${data.qty}</span>
+          <button class="qty-btn" onclick="changeCartQty('${name}', 1)">+</button>
+          <button class="btn" style="background:#ff4d4d; margin-left:auto;" onclick="removeCartItem('${name}')">Remove</button>
+        </div>
+      `;
+      list.appendChild(li);
+    });
+
+    document.getElementById("totalItems").innerText = totalItems;
+    document.getElementById("totalAmount").innerText = totalAmount;
+  }
+
+  function changeCartQty(name, change) {
+    const currentCart = JSON.parse(localStorage.getItem("cart")) || {};
+    if (!currentCart[name]) return;
+
+    currentCart[name].qty += change;
+    if (currentCart[name].qty <= 0) delete currentCart[name];
+
+    localStorage.setItem("cart", JSON.stringify(currentCart));
+    renderCartPage();
+    updateCartBar();
+  }
+
+  function removeCartItem(name) {
+    const currentCart = JSON.parse(localStorage.getItem("cart")) || {};
+    delete currentCart[name];
+    localStorage.setItem("cart", JSON.stringify(currentCart));
+    renderCartPage();
+    updateCartBar();
+  }
+
+  function checkoutCart() {
+    const currentCart = JSON.parse(localStorage.getItem("cart")) || {};
+    if (Object.keys(currentCart).length === 0) return;
+
+    let totalItems = 0;
+    let totalAmount = 0;
+
+    Object.keys(currentCart).forEach(name => {
+      const data = currentCart[name];
+      const item = stock.find(i => i.name === name);
+      if (!item) return;
+
+      item.quantity -= data.qty;
+      totalItems += data.qty;
+      totalAmount += data.qty * data.price;
+    });
+
+    history.push({
+      date: new Date().toLocaleString(),
+      items: currentCart,
+      totalItems,
+      totalAmount,
+      type: "Cart Sell"
+    });
+
+    localStorage.removeItem("cart");
+    localStorage.setItem("stock", JSON.stringify(stock));
+    localStorage.setItem("history", JSON.stringify(history));
+
+    renderCartPage();
+    updateCartBar();
+    alert("Payment marked as paid ✔");
+  }
+
+  renderCartPage();
+</script>
+
 </body>
 </html>

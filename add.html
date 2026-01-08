@@ -5,33 +5,48 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Add Stock</title>
 <link rel="stylesheet" href="style.css">
-<script type="module" src="script.js" defer></script>
 </head>
 <body>
-<header>
-  <h1>Add Stock</h1>
-</header>
 
-<section class="add-form">
-  <label>Name: <input type="text" id="productName"></label>
-  <label>Barcode: <input type="text" id="productBarcode"></label>
-  <label>Quantity: <input type="number" id="productQuantity"></label>
-  <label>Unit: 
+<div class="shop-nav">My Shop Name</div>
+
+<div style="padding: 20px; max-width:500px; margin:auto;">
+
+  <input type="text" id="productName" placeholder="Product Name">
+
+  <input
+    type="text"
+    id="productBarcode"
+    placeholder="Barcode"
+    style="margin-top:10px;"
+  >
+
+  <div style="display:flex; gap:10px; margin-top:10px;">
+    <input type="number" id="productQuantity" placeholder="Quantity">
     <select id="unit">
       <option value="pcs">pcs</option>
-      <option value="kg">kg</option>
       <option value="g">g</option>
+      <option value="kg">kg</option>
     </select>
-  </label>
-  <label>Price: <input type="number" id="productPrice"></label>
-  <button onclick="addStock()">Add Stock</button>
-</section>
+  </div>
 
-<nav class="main-nav">
-  <a href="index.html">Dashboard</a>
-  <a href="sell.html">Sell Items</a>
-  <a href="cart.html">Cart</a>
-  <a href="history.html">History</a>
-</nav>
+  <input
+    type="number"
+    id="productPrice"
+    placeholder="Price per unit (₹)"
+    style="margin-top:10px;"
+  >
+
+  <button class="btn" onclick="addStock()">Add Stock</button>
+</div>
+
+<div class="bottom-nav">
+  <button onclick="location.href='index.html'">🖥️Home</button>
+  <button onclick="location.href='add.html'">➕ Add</button>
+  <button onclick="location.href='sell.html'">🛒 Sell</button>
+  <button onclick="location.href='history.html'">⌛Stats</button>
+</div>
+
+<script src="script.js"></script>
 </body>
 </html>
