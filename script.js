@@ -53,6 +53,8 @@ function addStock() {
   document.getElementById("productBarcode").value = "";
   document.getElementById("productQuantity").value = "";
   document.getElementById("productPrice").value = "";
+
+  updateDashboard(); // Update dashboard after stock change
 }
 
 // ================================
@@ -76,6 +78,7 @@ function editItem(barcode) {
   logActivity("Item Edited", `${oldData.name} updated`, { before: oldData, after: item });
 
   populateSell();
+  updateDashboard();
 }
 
 // ================================
@@ -287,6 +290,7 @@ function checkoutCart() {
 
   renderCartPage();
   updateCartBar();
+  updateDashboard(); // update stock counters
   alert("Payment marked as paid ✔");
 }
 
@@ -377,8 +381,64 @@ function searchStock() {
 }
 
 // ================================
+// DASHBOARD POPUP LISTS
+// ================================
+function showList(type) {
+  const popup = document.getElementById("popup");
+  const list = document.getElementById("popupList");
+  const title = document.getElementById("popupTitle");
+  list.innerHTML = '';
+
+  let filtered = [];
+  if(type === 'all') {
+    title.innerText = "Total Stock";
+    filtered = stock;
+  } else if(type === 'out') {
+    title.innerText = "Out of Stock";
+    filtered = stock.filter(item => item.quantity === 0);
+  } else if(type === 'low') {
+    title.innerText = "Low Stock";
+    filtered = stock.filter(item => item.quantity > 0 && item.quantity <= 10);
+  }
+
+  filtered.forEach(item => {
+    const li = document.createElement('li');
+
+    let badgeText = "OK";
+    if(item.quantity === 0) badgeText = "Out";
+    else if(item.quantity <= 10) badgeText = "Low";
+
+    li.innerHTML = `
+      <div style="display:flex; justify-content:space-between; align-items:center; width:100%;">
+        <span style="flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="${item.name}">${item.name}</span>
+        <span style="margin-left:10px;">${item.quantity} ${item.unit}</span>
+        <span class="badge">${badgeText}</span>
+      </div>
+    `;
+    list.appendChild(li);
+  });
+
+  popup.style.display = 'block';
+}
+
+// Close popup
+function closePopup() {
+  document.getElementById("popup").style.display = 'none';
+}
+
+// ================================
+// UPDATE DASHBOARD COUNTERS
+// ================================
+function updateDashboard() {
+  document.getElementById("totalStock").innerText = stock.length;
+  document.getElementById("outStock").innerText = stock.filter(i => i.quantity === 0).length;
+  document.getElementById("lowStock").innerText = stock.filter(i => i.quantity > 0 && i.quantity <= 10).length;
+}
+
+// ================================
 // INIT
 // ================================
 updateCartBar();
+updateDashboard();
 if (document.getElementById("stockList")) populateSell();
 if (document.getElementById("historyList")) renderHistory();
