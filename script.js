@@ -1,3 +1,5 @@
+alert("SCRIPT LOADED");
+
 import { auth } from "./firebase.js";
 import { loadUserData, saveUserData } from "./data.js";
 
