@@ -5,14 +5,78 @@
   <title>History</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="stylesheet" href="style.css">
+
+  <style>
+    body {
+      color: #fff;
+    }
+
+    .history-card {
+      background: #232323;
+      padding: 16px;
+      border-radius: 14px;
+      margin-bottom: 16px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.4);
+    }
+
+    .history-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+
+    .history-header strong {
+      font-size: 18px;
+      color: #00e676;
+    }
+
+    .amount {
+      font-size: 20px;
+      font-weight: bold;
+      color: #ffd54f;
+    }
+
+    .meta {
+      font-size: 13px;
+      color: #bdbdbd;
+      margin-bottom: 8px;
+    }
+
+    .customer {
+      margin: 6px 0;
+      font-size: 14px;
+    }
+
+    .items {
+      margin-top: 10px;
+      padding-top: 10px;
+      border-top: 1px solid #444;
+    }
+
+    .item-row {
+      display: flex;
+      justify-content: space-between;
+      font-size: 14px;
+      margin-bottom: 6px;
+    }
+
+    .empty {
+      text-align: center;
+      color: #aaa;
+      margin-top: 40px;
+    }
+  </style>
 </head>
+
 <body>
 
 <div class="shop-nav">📜 History</div>
 
-<div style="padding:15px; max-width:700px; margin:auto;">
+<div style="padding:15px; max-width:700px; margin:auto; padding-bottom:100px;">
   <ul id="historyList" style="list-style:none; padding:0;"></ul>
 </div>
+
 <div class="bottom-nav">
   <button onclick="location.href='index.html'">🖥️Home</button>
   <button onclick="location.href='add.html'">➕ Add</button>
@@ -25,18 +89,46 @@
   const list = document.getElementById("historyList");
 
   if (historyData.length === 0) {
-    list.innerHTML = "<p>No history available</p>";
+    list.innerHTML = '<p class="empty">No history available</p>';
   } else {
-    historyData.reverse().forEach(h => {
+    historyData.slice().reverse().forEach(h => {
+      if (h.type !== "Sale") return;
+
       const li = document.createElement("li");
-      li.style.marginBottom = "12px";
+      li.className = "history-card";
+
+      let itemsHTML = "";
+      if (h.items) {
+        Object.values(h.items).forEach(item => {
+          itemsHTML += `
+            <div class="item-row">
+              <span>${item.name} × ${item.qty}</span>
+              <span>₹${item.qty * item.price}</span>
+            </div>
+          `;
+        });
+      }
 
       li.innerHTML = `
-        <strong>${h.type}</strong><br>
-        <small>${h.date}</small><br>
-        <span>${h.totalItems} items × ₹${h.totalAmount}</span>
-        <hr>
+        <div class="history-header">
+          <strong>Sale</strong>
+          <span class="amount">₹${h.totalAmount || 0}</span>
+        </div>
+
+        <div class="meta">
+          ${h.date || ""} ${h.time || ""}
+        </div>
+
+        <div class="customer">
+          👤 ${h.customerName || "Walk-in Customer"}<br>
+          📞 ${h.customerPhone || "N/A"}
+        </div>
+
+        <div class="items">
+          ${itemsHTML}
+        </div>
       `;
+
       list.appendChild(li);
     });
   }

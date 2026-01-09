@@ -5,6 +5,33 @@
   <title>Cart</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <link rel="stylesheet" href="style.css" />
+  <style>
+  body {
+    color: #ffffff;
+  }
+
+  li, strong, span, small, h2, h3 {
+    color: #ffffff;
+  }
+
+  #cartList li {
+    background: #232323;
+  }
+
+  .btn {
+    color: #ffffff;
+  }
+</style>
+<style>
+  /* Make ONLY bottom summary text black */
+  #cartSummary,
+  #cartSummary h2,
+  #cartSummary h3,
+  #cartSummary span {
+    color: #000000 !important;
+  }
+</style>
+
 </head>
 <body>
 
@@ -36,7 +63,6 @@
   <button onclick="location.href='history.html'">⌛Stats</button>
 </div>
 
-<!-- 🔥 IMPORTANT: NO type="module" -->
 <script src="script.js"></script>
 
 <script>
@@ -44,124 +70,7 @@ function goBack() {
   window.location.href = "sell.html";
 }
 
-// ================================
-// RENDER CART
-// ================================
-function renderCartPage() {
-  const list = document.getElementById("cartList");
-  const empty = document.getElementById("emptyCart");
-  const summary = document.getElementById("cartSummary");
-
-  const currentCart = JSON.parse(localStorage.getItem("cart")) || {};
-  const keys = Object.keys(currentCart);
-
-  list.innerHTML = "";
-
-  if (keys.length === 0) {
-    empty.style.display = "block";
-    summary.style.display = "none";
-    return;
-  }
-
-  empty.style.display = "none";
-  summary.style.display = "block";
-
-  let totalItems = 0;
-  let totalAmount = 0;
-
-  keys.forEach(barcode => {
-    const data = currentCart[barcode];
-    const amount = data.qty * data.price;
-
-    totalItems += data.qty;
-    totalAmount += amount;
-
-    const li = document.createElement("li");
-    li.style.background = "#232323";
-    li.style.padding = "12px";
-    li.style.borderRadius = "12px";
-    li.style.marginBottom = "10px";
-
-    li.innerHTML = `
-      <strong>${data.name}</strong>
-      <div style="display:flex; justify-content:space-between; margin-top:5px;">
-        <span>₹${data.price} × ${data.qty} ${data.unit}</span>
-        <span>₹${amount}</span>
-      </div>
-      <div style="display:flex; gap:6px; margin-top:8px; align-items:center;">
-        <button class="qty-btn" onclick="changeCartQty('${barcode}', -1)">−</button>
-        <span>${data.qty}</span>
-        <button class="qty-btn" onclick="changeCartQty('${barcode}', 1)">+</button>
-        <button class="btn" style="background:#ff4d4d; margin-left:auto;" onclick="removeCartItem('${barcode}')">Remove</button>
-      </div>
-    `;
-    list.appendChild(li);
-  });
-
-  document.getElementById("totalItems").innerText = totalItems;
-  document.getElementById("totalAmount").innerText = totalAmount;
-}
-
-// ================================
-// CART CONTROLS
-// ================================
-function changeCartQty(barcode, change) {
-  const currentCart = JSON.parse(localStorage.getItem("cart")) || {};
-  if (!currentCart[barcode]) return;
-
-  currentCart[barcode].qty += change;
-  if (currentCart[barcode].qty <= 0) delete currentCart[barcode];
-
-  localStorage.setItem("cart", JSON.stringify(currentCart));
-  renderCartPage();
-  updateCartBar();
-}
-
-function removeCartItem(barcode) {
-  const currentCart = JSON.parse(localStorage.getItem("cart")) || {};
-  delete currentCart[barcode];
-  localStorage.setItem("cart", JSON.stringify(currentCart));
-  renderCartPage();
-  updateCartBar();
-}
-
-// ================================
-// CHECKOUT (HISTORY + STOCK FIX)
-// ================================
-function checkoutCart() {
-  const currentCart = JSON.parse(localStorage.getItem("cart")) || {};
-  if (Object.keys(currentCart).length === 0) return;
-
-  let totalItems = 0;
-  let totalAmount = 0;
-
-  for (let barcode in currentCart) {
-    const data = currentCart[barcode];
-    const item = stock.find(i => i.barcode === barcode);
-    if (!item) continue;
-
-    item.quantity -= data.qty;
-    totalItems += data.qty;
-    totalAmount += data.qty * data.price;
-  }
-
-  history.push({
-    type: "Sale",
-    date: new Date().toLocaleString(),
-    totalItems,
-    totalAmount,
-    items: currentCart
-  });
-
-  localStorage.setItem("stock", JSON.stringify(stock));
-  localStorage.setItem("history", JSON.stringify(history));
-  localStorage.removeItem("cart");
-
-  renderCartPage();
-  updateCartBar();
-  alert("Payment marked as paid ✔");
-}
-
+// Just call the shared render function
 renderCartPage();
 </script>
 

@@ -39,7 +39,6 @@ function addStock() {
     existing.quantity += quantity;
     existing.price = price;
     existing.unit = unit;
-
     logActivity("Stock Refilled", `${name} +${quantity} ${unit}`, { barcode, quantity });
   } else {
     stock.push({ name, barcode, quantity, unit, price });
@@ -74,7 +73,6 @@ function editItem(barcode) {
   item.price = newPrice;
 
   localStorage.setItem("stock", JSON.stringify(stock));
-
   logActivity("Item Edited", `${oldData.name} updated`, { before: oldData, after: item });
 
   populateSell();
@@ -113,7 +111,6 @@ function populateSell(list = stock) {
         <button class="btn" onclick="addToCart('${item.barcode}')">Add</button>
       </div>
     `;
-
     ul.appendChild(li);
   });
 }
@@ -261,7 +258,7 @@ function renderCartPage() {
 }
 
 // ================================
-// REST FUNCTIONS: CHANGE CART QTY, REMOVE, CHECKOUT
+// CHANGE CART QTY / REMOVE
 // ================================
 function changeCartQty(barcode, change) {
   const currentCart = JSON.parse(localStorage.getItem("cart")) || {};
@@ -283,9 +280,15 @@ function removeCartItem(barcode) {
   updateCartBar();
 }
 
+// ================================
+// CHECKOUT (UPDATED)
+// ================================
 function checkoutCart() {
   const currentCart = JSON.parse(localStorage.getItem("cart")) || {};
   if (Object.keys(currentCart).length === 0) return;
+
+  const customerName = prompt("Enter customer name") || "Walk-in Customer";
+  const customerPhone = prompt("Enter customer phone number") || "N/A";
 
   let totalItems = 0;
   let totalAmount = 0;
@@ -300,7 +303,16 @@ function checkoutCart() {
     totalAmount += data.qty * data.price;
   }
 
-  history.push({ type: "Sale", date: new Date().toLocaleString(), totalItems, totalAmount, items: currentCart });
+  history.push({
+    type: "Sale",
+    customerName,
+    customerPhone,
+    date: new Date().toLocaleDateString(),
+    time: new Date().toLocaleTimeString(),
+    totalItems,
+    totalAmount,
+    items: currentCart
+  });
 
   localStorage.setItem("stock", JSON.stringify(stock));
   localStorage.setItem("history", JSON.stringify(history));
@@ -309,7 +321,8 @@ function checkoutCart() {
   renderCartPage();
   updateCartBar();
   updateDashboard();
-  alert("Payment marked as paid ✔");
+
+  alert(`Payment marked as paid ✔\nThank you ${customerName}`);
 }
 
 // ================================
@@ -330,127 +343,16 @@ function renderHistory() {
   historyData.slice().reverse().forEach(h => {
     const li = document.createElement("li");
     li.style.marginBottom = "12px";
-    let totalItems = h.totalItems || 0;
-    let totalAmount = h.totalAmount || 0;
 
     li.innerHTML = `
       <strong>${h.type}</strong><br>
-      <small>${h.date}</small><br>
-      <span>${totalItems} items × ₹${totalAmount}</span>
+      <small>${h.date || ""} ${h.time || ""}</small><br>
+      <small>${h.customerName || ""} ${h.customerPhone || ""}</small><br>
+      <span>${h.totalItems || 0} items × ₹${h.totalAmount || 0}</span>
       <hr>
     `;
     list.appendChild(li);
   });
-}
-
-// ================================
-// BARCODE SCAN (SELL PAGE)
-// ================================
-document.addEventListener("DOMContentLoaded", () => {
-  const barcodeInput = document.getElementById("barcodeInput");
-  if (!barcodeInput) return;
-
-  barcodeInput.focus();
-
-  barcodeInput.addEventListener("keydown", e => {
-    if (e.key === "Enter") {
-      e.preventDefault();
-
-      const code = barcodeInput.value.trim();
-      if (!code) return;
-
-      const item = stock.find(i => i.barcode === code);
-      if (!item) {
-        alert("Item not found");
-        barcodeInput.value = "";
-        return;
-      }
-
-      if (!item.price || item.price === 0) {
-        alert("Please set price first");
-        editItem(item.barcode);
-        barcodeInput.value = "";
-        return;
-      }
-
-      let liveCart = JSON.parse(localStorage.getItem("cart")) || {};
-      if (!liveCart[item.barcode]) {
-        liveCart[item.barcode] = { name: item.name, barcode: item.barcode, qty: 1, price: item.price, unit: item.unit };
-      } else {
-        liveCart[item.barcode].qty += 1;
-      }
-
-      localStorage.setItem("cart", JSON.stringify(liveCart));
-      updateCartBar();
-      barcodeInput.value = "";
-    }
-  });
-});
-
-// ================================
-// SEARCH STOCK
-// ================================
-function searchStock() {
-  const input = document.getElementById("searchItem");
-  if (!input) return;
-  const query = input.value.toLowerCase();
-  const filtered = stock.filter(item => item.name.toLowerCase().includes(query));
-  populateSell(filtered);
-}
-
-// ================================
-// DASHBOARD POPUP LISTS
-// ================================
-function showList(type) {
-  const popup = document.getElementById("popup");
-  const list = document.getElementById("popupList");
-  const title = document.getElementById("popupTitle");
-  list.innerHTML = '';
-
-  let filtered = [];
-  if(type === 'all') {
-    title.innerText = "Total Stock";
-    filtered = stock;
-  } else if(type === 'out') {
-    title.innerText = "Out of Stock";
-    filtered = stock.filter(item => item.quantity === 0);
-  } else if(type === 'low') {
-    title.innerText = "Low Stock";
-    filtered = stock.filter(item => item.quantity > 0 && item.quantity <= 10);
-  }
-
-  filtered.forEach(item => {
-    const li = document.createElement('li');
-
-    let badgeText = "OK";
-    if(item.quantity === 0) badgeText = "Out";
-    else if(item.quantity <= 10) badgeText = "Low";
-
-    li.innerHTML = `
-      <div style="display:flex; justify-content:space-between; align-items:center; width:100%;">
-        <span style="flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="${item.name}">${item.name}</span>
-        <span style="margin-left:10px;">${item.quantity} ${item.unit}</span>
-        <span class="badge">${badgeText}</span>
-      </div>
-    `;
-    list.appendChild(li);
-  });
-
-  popup.style.display = 'block';
-}
-
-// Close popup
-function closePopup() {
-  document.getElementById("popup").style.display = 'none';
-}
-
-// ================================
-// UPDATE DASHBOARD COUNTERS
-// ================================
-function updateDashboard() {
-  document.getElementById("totalStock").innerText = stock.length;
-  document.getElementById("outStock").innerText = stock.filter(i => i.quantity === 0).length;
-  document.getElementById("lowStock").innerText = stock.filter(i => i.quantity > 0 && i.quantity <= 10).length;
 }
 
 // ================================
