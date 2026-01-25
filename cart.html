@@ -5,39 +5,39 @@
   <title>Cart</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <link rel="stylesheet" href="style.css" />
+
   <style>
-  body {
-    color: #ffffff;
-  }
+    body {
+      color: #ffffff;
+    }
 
-  li, strong, span, small, h2, h3 {
-    color: #ffffff;
-  }
+    li, strong, span, small, h2, h3 {
+      color: #ffffff;
+    }
 
-  #cartList li {
-    background: #232323;
-  }
+    #cartList li {
+      background: #232323;
+    }
 
-  .btn {
-    color: #ffffff;
-  }
-</style>
-<style>
-  /* Make ONLY bottom summary text black */
-  #cartSummary,
-  #cartSummary h2,
-  #cartSummary h3,
-  #cartSummary span {
-    color: #000000 !important;
-  }
-</style>
+    .btn {
+      color: #ffffff;
+    }
 
+    /* Bottom summary text black */
+    #cartSummary,
+    #cartSummary h2,
+    #cartSummary h3,
+    #cartSummary span {
+      color: #000000 !important;
+    }
+  </style>
 </head>
 <body>
 
 <div class="shop-nav">🛒 Cart</div>
 
 <div style="padding:15px; max-width:700px; margin:auto;">
+
   <button class="btn" style="margin-bottom:15px;" onclick="goBack()">← Back</button>
 
   <ul id="cartList" style="list-style:none; padding:0;"></ul>
@@ -50,6 +50,7 @@
     <hr />
     <h3>Total Items: <span id="totalItems">0</span></h3>
     <h2>Total Amount: ₹<span id="totalAmount">0</span></h2>
+
     <button class="btn" style="width:100%; margin-top:10px;" onclick="checkoutCart()">
       Mark as Paid
     </button>
@@ -63,15 +64,13 @@
   <button onclick="location.href='history.html'">⌛Stats</button>
 </div>
 
-<script src="script.js"></script>
+<!-- CLOUD REALTIME LOGIC -->
+<script type="module" src="script.js"></script>
 
 <script>
 function goBack() {
   window.location.href = "sell.html";
 }
-
-// Just call the shared render function
-renderCartPage();
 </script>
 
 </body>

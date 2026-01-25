@@ -7,7 +7,6 @@
 <link rel="stylesheet" href="style.css">
 
 <style>
-/* =================== SELL PAGE STYLES =================== */
 #stockList li {
   background: #3d636d;
   padding: 15px;
@@ -22,7 +21,7 @@
 
 #stockList li .item-info {
   flex: 1;
-  min-width: 0;  /* allows shrinking for ellipsis */
+  min-width: 0;
 }
 
 #stockList li .item-info strong {
@@ -37,7 +36,6 @@
   color: #f5f1f1;
 }
 
-/* EDIT BUTTON */
 .edit-btn {
   background: #444;
   color: #f5f5f5;
@@ -61,7 +59,6 @@
 
 <div style="padding:20px; max-width:700px; margin:auto; padding-bottom:200px;">
 
-  <!-- BARCODE SCAN INPUT -->
   <input
     type="text"
     id="barcodeInput"
@@ -71,7 +68,6 @@
     style="margin-bottom:10px;"
   >
 
-  <!-- SEARCH BAR -->
   <input
     type="text"
     id="searchItem"
@@ -83,7 +79,6 @@
   <ul id="stockList" style="list-style:none; padding:0; margin-top:15px;"></ul>
 </div>
 
-<!-- BOTTOM NAV -->
 <div class="bottom-nav">
   <button onclick="location.href='index.html'">🖥️Home</button>
   <button onclick="location.href='add.html'">➕ Add</button>
@@ -91,7 +86,6 @@
   <button onclick="location.href='history.html'">⌛Stats</button>
 </div>
 
-<!-- CART BAR -->
 <div id="cartBar" style="
   position: fixed;
   bottom: 70px;
@@ -120,21 +114,8 @@
   ">View Cart</button>
 </div>
 
-<script src="script.js"></script>
-
-<script type="module">
-import { auth } from "./firebase.js";
-import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
-
-onAuthStateChanged(auth, (user) => {
-  if (!user) window.location.href = "login.html";
-});
-
-// Ensure stock populates after page load
-document.addEventListener("DOMContentLoaded", () => {
-  if (document.getElementById("stockList")) populateSell();
-});
-</script>
+<!-- CLOUD REALTIME LOGIC -->
+<script type="module" src="script.js"></script>
 
 </body>
 </html>

@@ -38,20 +38,8 @@
   <button onclick="location.href='history.html'">⌛ Stats</button>
 </div>
 
-<!-- AUTH CHECK -->
-<script type="module">
-import { auth } from "./firebase.js";
-import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
-
-onAuthStateChanged(auth, (user) => {
-  if (!user) {
-    window.location.href = "login.html";
-  }
-});
-</script>
-
-<!-- MAIN SCRIPT -->
-<script src="script.js"></script>
+<!-- CLOUD REALTIME LOGIC -->
+<script type="module" src="script.js"></script>
 
 </body>
 </html>

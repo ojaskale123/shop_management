@@ -84,55 +84,8 @@
   <button onclick="location.href='history.html'">⌛Stats</button>
 </div>
 
-<script>
-  const historyData = JSON.parse(localStorage.getItem("history")) || [];
-  const list = document.getElementById("historyList");
-
-  if (historyData.length === 0) {
-    list.innerHTML = '<p class="empty">No history available</p>';
-  } else {
-    historyData.slice().reverse().forEach(h => {
-      if (h.type !== "Sale") return;
-
-      const li = document.createElement("li");
-      li.className = "history-card";
-
-      let itemsHTML = "";
-      if (h.items) {
-        Object.values(h.items).forEach(item => {
-          itemsHTML += `
-            <div class="item-row">
-              <span>${item.name} × ${item.qty}</span>
-              <span>₹${item.qty * item.price}</span>
-            </div>
-          `;
-        });
-      }
-
-      li.innerHTML = `
-        <div class="history-header">
-          <strong>Sale</strong>
-          <span class="amount">₹${h.totalAmount || 0}</span>
-        </div>
-
-        <div class="meta">
-          ${h.date || ""} ${h.time || ""}
-        </div>
-
-        <div class="customer">
-          👤 ${h.customerName || "Walk-in Customer"}<br>
-          📞 ${h.customerPhone || "N/A"}
-        </div>
-
-        <div class="items">
-          ${itemsHTML}
-        </div>
-      `;
-
-      list.appendChild(li);
-    });
-  }
-</script>
+<!-- CLOUD REALTIME SCRIPT -->
+<script type="module" src="script.js"></script>
 
 </body>
 </html>
