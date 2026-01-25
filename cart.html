@@ -1,60 +1,77 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <title>Cart</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <link rel="stylesheet" href="style.css" />
+<meta charset="UTF-8">
+<title>Cart</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="stylesheet" href="style.css">
 
-  <style>
-    body {
-      color: #ffffff;
-    }
+<style>
+body { color:#fff; }
 
-    li, strong, span, small, h2, h3 {
-      color: #ffffff;
-    }
+#cartList li{
+  background:#1f2f33;
+  padding:16px;
+  border-radius:18px;
+  margin-bottom:14px;
+  box-shadow:0 8px 22px rgba(0,0,0,.25);
+}
 
-    #cartList li {
-      background: #232323;
-    }
+#cartList strong{
+  color:#00e676;
+  font-size:18px;
+}
 
-    .btn {
-      color: #ffffff;
-    }
+#cartSummary{
+  background:#b8e3e9;
+  padding:18px;
+  border-radius:20px;
+  box-shadow:0 10px 25px rgba(0,0,0,.25);
+  color:#000;
+}
 
-    /* Bottom summary text black */
-    #cartSummary,
-    #cartSummary h2,
-    #cartSummary h3,
-    #cartSummary span {
-      color: #000000 !important;
-    }
-  </style>
+.checkout-btn{
+  background:linear-gradient(135deg,#00e676,#00c853);
+  color:#003300;
+  font-size:20px;
+  padding:16px;
+  border-radius:22px;
+  font-weight:700;
+  width:100%;
+  border:none;
+  margin-top:12px;
+  cursor:pointer;
+}
+.checkout-btn:hover{
+  transform:translateY(-2px);
+}
+</style>
 </head>
+
 <body>
 
 <div class="shop-nav">🛒 Cart</div>
 
-<div style="padding:15px; max-width:700px; margin:auto;">
+<div style="padding:15px;max-width:700px;margin:auto;">
 
-  <button class="btn" style="margin-bottom:15px;" onclick="goBack()">← Back</button>
+<button class="btn" onclick="goBack()">← Back</button>
 
-  <ul id="cartList" style="list-style:none; padding:0;"></ul>
+<ul id="cartList" style="list-style:none;padding:0;"></ul>
 
-  <div id="emptyCart" style="text-align:center; margin-top:40px; display:none;">
-    <strong>Cart is empty</strong>
-  </div>
+<div id="emptyCart" style="text-align:center;margin-top:40px;display:none;">
+  <strong>Cart is empty</strong>
+</div>
 
-  <div id="cartSummary" style="margin-top:20px; display:none;">
-    <hr />
-    <h3>Total Items: <span id="totalItems">0</span></h3>
-    <h2>Total Amount: ₹<span id="totalAmount">0</span></h2>
+<div id="cartSummary" style="display:none;margin-top:20px;">
+  <h3>Total Items: <span id="totalItems">0</span></h3>
+  <h2>Total Amount: ₹<span id="totalAmount">0</span></h2>
 
-    <button class="btn" style="width:100%; margin-top:10px;" onclick="checkoutCart()">
-      Mark as Paid
-    </button>
-  </div>
+  <button class="checkout-btn" onclick="checkoutCart()">
+  ✅ Confirm Payment
+</button>
+
+</div>
+
 </div>
 
 <div class="bottom-nav">
@@ -64,13 +81,10 @@
   <button onclick="location.href='history.html'">⌛Stats</button>
 </div>
 
-<!-- CLOUD REALTIME LOGIC -->
 <script type="module" src="script.js"></script>
 
 <script>
-function goBack() {
-  window.location.href = "sell.html";
-}
+function goBack(){ location.href="sell.html"; }
 </script>
 
 </body>

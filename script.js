@@ -1,47 +1,37 @@
-import { onSnapshot } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
-
 import { auth, db } from "./firebase.js";
 import {
   collection,
-  getDocs,
   addDoc,
   updateDoc,
   deleteDoc,
   doc,
   query,
-  where
+  where,
+  getDocs,
+  onSnapshot
 } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
 
-/* ================= USER DATA REFS ================= */
+/* ================= SAFE REFS ================= */
 
-function stockRef() {
-  return collection(db, "users", auth.currentUser.uid, "stock");
-}
+const stockRef = () => collection(db, "users", auth.currentUser.uid, "stock");
+const cartRef = () => collection(db, "users", auth.currentUser.uid, "cart");
+const historyRef = () => collection(db, "users", auth.currentUser.uid, "history");
 
-function historyRef() {
-  return collection(db, "users", auth.currentUser.uid, "history");
-}
-
-function cartRef() {
-  return collection(db, "users", auth.currentUser.uid, "cart");
-}
-
-/* ================= LOCAL CACHE ================= */
+/* ================= STATE ================= */
 
 let stock = [];
-let cart = {};
+let cart = {};       // Firestore cart
+let tempQty = {};    // Sell page buffer
 let history = [];
 
-/* ================= LOAD ALL ================= */
+/* ================= AUTH ================= */
 
-async function loadAll() {
-  await loadStock();
-  await loadCart();
-  await loadHistory();
-  updateCartBar();
-  updateDashboard();
-  if (document.getElementById("historyList")) renderHistory();
-}
+auth.onAuthStateChanged(user => {
+  if (!user) return (location.href = "login.html");
+  listenStock();
+  listenCart();
+  listenHistory();
+});
 
 /* ================= STOCK ================= */
 
@@ -52,7 +42,6 @@ function listenStock() {
     updateDashboard();
   });
 }
-
 
 async function addStock() {
   const name = productName.value.trim();
@@ -67,11 +56,9 @@ async function addStock() {
   const snap = await getDocs(q);
 
   if (!snap.empty) {
-    const ref = snap.docs[0].ref;
-    const data = snap.docs[0].data();
-
-    await updateDoc(ref, {
-      quantity: data.quantity + quantity,
+    const d = snap.docs[0];
+    await updateDoc(d.ref, {
+      quantity: d.data().quantity + quantity,
       price,
       unit
     });
@@ -79,125 +66,106 @@ async function addStock() {
     await addDoc(stockRef(), { name, barcode, quantity, unit, price });
   }
 
-  loadStock();
+  productName.value = "";
+  productBarcode.value = "";
+  productQuantity.value = "";
+  productPrice.value = "";
 }
-
-/* ================= EDIT ================= */
 
 async function editItem(barcode) {
   const item = stock.find(i => i.barcode === barcode);
   if (!item) return;
 
-  const newName = prompt("Edit Name:", item.name);
-  const newPrice = Number(prompt("Edit Price:", item.price));
-  if (!newName || isNaN(newPrice)) return;
+  const name = prompt("Edit name", item.name);
+  const price = Number(prompt("Edit price", item.price));
+  if (!name || isNaN(price)) return;
 
   await updateDoc(doc(db, "users", auth.currentUser.uid, "stock", item.id), {
-    name: newName,
-    price: newPrice
+    name,
+    price
   });
-
-  loadStock();
 }
 
-/* ================= SELL PAGE ================= */
+/* ================= SELL ================= */
 
-function populateSell(list = stock) {
+function populateSell() {
   const ul = document.getElementById("stockList");
   if (!ul) return;
 
   ul.innerHTML = "";
 
-  list.filter(i => i.quantity > 0).forEach(item => {
-    if (!cart[item.barcode]) cart[item.barcode] = { qty: 0, price: item.price, unit: item.unit };
+  stock.filter(i => i.quantity > 0).forEach(item => {
+    if (tempQty[item.barcode] == null) tempQty[item.barcode] = 0;
 
-    const step = (item.unit === "kg" || item.unit === "g") ? 0.1 : 1;
+    const step = item.unit === "kg" || item.unit === "g" ? 0.1 : 1;
 
-    const li = document.createElement("li");
-    li.innerHTML = `
-      <div class="item-info">
-        <strong>${item.name}</strong>
-        <small>Available: ${item.quantity} ${item.unit}</small>
-        <small>
-          Price: ₹${item.price}
-          <button onclick="editItem('${item.barcode}')" class="edit-btn">✏</button>
-        </small>
-      </div>
-      <div style="display:flex; gap:10px; margin-top:10px;">
-        <button class="qty-btn" onclick="changeQty('${item.barcode}', -${step})">−</button>
-        <input id="qty-${item.barcode}" value="${cart[item.barcode].qty}" style="width:50px;text-align:center" 
-        oninput="manualQty('${item.barcode}', this.value)">
-        <button class="qty-btn" onclick="changeQty('${item.barcode}', ${step})">+</button>
-        <button class="btn" onclick="addToCart('${item.barcode}')">Add</button>
-      </div>
-    `;
-    ul.appendChild(li);
+    ul.innerHTML += `
+      <li>
+        <div class="item-info">
+          <strong>${item.name}</strong>
+          <small>Available: ${item.quantity} ${item.unit}</small>
+          <small>₹${item.price}
+            <button onclick="editItem('${item.barcode}')" class="edit-btn">✏</button>
+          </small>
+        </div>
+        <div style="display:flex; gap:10px; margin-top:10px;">
+          <button class="qty-btn" onclick="changeQty('${item.barcode}', -${step})">−</button>
+          <input id="qty-${item.barcode}" value="${tempQty[item.barcode]}"
+            style="width:50px;text-align:center"
+            oninput="manualQty('${item.barcode}', this.value)">
+          <button class="qty-btn" onclick="changeQty('${item.barcode}', ${step})">+</button>
+          <button class="btn" onclick="addToCart('${item.barcode}')">Add</button>
+        </div>
+      </li>`;
   });
 }
 
 /* ================= QTY ================= */
 
-function manualQty(barcode, value) {
-  const item = stock.find(i => i.barcode === barcode);
-  if (!item) return;
-
-  let num = parseFloat(value);
-  if (isNaN(num) || num < 0) num = 0;
-  if (num > item.quantity) num = item.quantity;
-
-  cart[barcode].qty = num;
+function manualQty(barcode, v) {
+  tempQty[barcode] = Number(v) || 0;
 }
 
-function changeQty(barcode, change) {
-  const item = stock.find(i => i.barcode === barcode);
-  if (!item) return;
-
-  let next = cart[barcode].qty + change;
-  if (item.unit === "kg" || item.unit === "g") next = Math.round(next * 10) / 10;
-  else next = Math.round(next);
-
-  if (next < 0) next = 0;
-  if (next > item.quantity) next = item.quantity;
-
-  cart[barcode].qty = next;
-  document.getElementById(`qty-${barcode}`).value = next;
+function changeQty(barcode, c) {
+  tempQty[barcode] = Math.max(0, (tempQty[barcode] || 0) + c);
+  document.getElementById(`qty-${barcode}`).value = tempQty[barcode];
 }
 
 /* ================= CART ================= */
 
 async function addToCart(barcode) {
   const item = stock.find(i => i.barcode === barcode);
-  if (!item || cart[barcode].qty <= 0) return;
-
-  const qty = cart[barcode].qty;
-  cart[barcode].qty = 0;
+  const qty = tempQty[barcode];
+  if (!item || qty <= 0) return;
 
   const q = query(cartRef(), where("barcode", "==", barcode));
   const snap = await getDocs(q);
 
   if (!snap.empty) {
-    const ref = snap.docs[0].ref;
-    const data = snap.docs[0].data();
-    await updateDoc(ref, { qty: data.qty + qty });
+    const d = snap.docs[0];
+    await updateDoc(d.ref, { qty: d.data().qty + qty });
   } else {
-    await addDoc(cartRef(), { name: item.name, barcode, qty, price: item.price, unit: item.unit });
+    await addDoc(cartRef(), {
+      name: item.name,
+      barcode,
+      qty,
+      price: item.price,
+      unit: item.unit
+    });
   }
 
-  loadCart();
+  tempQty[barcode] = 0;
+  document.getElementById(`qty-${barcode}`).value = 0;
 }
 
 function listenCart() {
   onSnapshot(cartRef(), snap => {
     cart = {};
-    snap.docs.forEach(d => {
-      const i = d.data();
-      cart[i.barcode] = i;
-    });
+    snap.docs.forEach(d => (cart[d.data().barcode] = d.data()));
     updateCartBar();
-    if (document.getElementById("cartList")) renderCartPage();
+    renderCartPage();
   });
 }
-
 
 function updateCartBar() {
   const bar = document.getElementById("cartBar");
@@ -222,68 +190,45 @@ function goToCart() {
 
 function renderCartPage() {
   const list = document.getElementById("cartList");
-  const empty = document.getElementById("emptyCart");
-  const summary = document.getElementById("cartSummary");
   if (!list) return;
 
   list.innerHTML = "";
 
-  const keys = Object.keys(cart);
-  if (!keys.length) {
-    empty.style.display = "block";
-    summary.style.display = "none";
-    return;
-  }
+  let ti = 0, ta = 0;
 
-  empty.style.display = "none";
-  summary.style.display = "block";
+  Object.values(cart).forEach(i => {
+    ti += i.qty;
+    ta += i.qty * i.price;
 
-  let totalItems = 0, totalAmount = 0;
-
-  keys.forEach(barcode => {
-    const d = cart[barcode];
-    const amount = d.qty * d.price;
-    totalItems += d.qty;
-    totalAmount += amount;
-
-    const li = document.createElement("li");
-    li.innerHTML = `
-      <strong>${d.name}</strong>
-      <div style="display:flex; justify-content:space-between;">
-        <span>${d.qty} × ₹${d.price}</span>
-        <span>₹${amount}</span>
-      </div>
-      <button class="btn" onclick="removeCartItem('${barcode}')">Remove</button>
-    `;
-    list.appendChild(li);
+    list.innerHTML += `
+      <li>
+        <strong>${i.name}</strong>
+        <div style="display:flex;justify-content:space-between">
+          <span>${i.qty} × ₹${i.price}</span>
+          <span>₹${i.qty * i.price}</span>
+        </div>
+        <button class="btn" onclick="removeCartItem('${i.barcode}')">Remove</button>
+      </li>`;
   });
 
-  totalItems.innerText = totalItems;
-  totalAmount.innerText = totalAmount;
+  if (totalItems) totalItems.innerText = ti;
+  if (totalAmount) totalAmount.innerText = ta;
 }
 
 async function removeCartItem(barcode) {
   const q = query(cartRef(), where("barcode", "==", barcode));
   const snap = await getDocs(q);
   if (!snap.empty) await deleteDoc(snap.docs[0].ref);
-  loadCart();
 }
 
 /* ================= CHECKOUT ================= */
 
 async function checkoutCart() {
-  if (!Object.keys(cart).length) return;
+  let totalItems = 0, totalAmount = 0;
 
-  const customerName = prompt("Customer name") || "Walk-in";
-  const customerPhone = prompt("Phone") || "N/A";
-
-  let totalItems = 0;
-  let totalAmount = 0;
-
-  for (let barcode in cart) {
-    const d = cart[barcode];
-    const item = stock.find(i => i.barcode === barcode);
-    if (!item) continue;
+  for (const b in cart) {
+    const d = cart[b];
+    const item = stock.find(i => i.barcode === b);
 
     totalItems += d.qty;
     totalAmount += d.qty * d.price;
@@ -294,8 +239,6 @@ async function checkoutCart() {
   }
 
   await addDoc(historyRef(), {
-    customerName,
-    customerPhone,
     totalItems,
     totalAmount,
     items: cart,
@@ -305,9 +248,6 @@ async function checkoutCart() {
   const snap = await getDocs(cartRef());
   for (const d of snap.docs) await deleteDoc(d.ref);
 
-  cart = {};
-  loadAll();
-
   alert("Payment completed ✔");
 }
 
@@ -316,35 +256,42 @@ async function checkoutCart() {
 function listenHistory() {
   onSnapshot(historyRef(), snap => {
     history = snap.docs.map(d => d.data());
-    if (document.getElementById("historyList")) renderHistory();
+    renderHistory();
   });
 }
-
 
 function renderHistory() {
   const list = document.getElementById("historyList");
   if (!list) return;
 
   list.innerHTML = "";
-
   history.slice().reverse().forEach(h => {
-    const li = document.createElement("li");
-    li.innerHTML = `
-      <strong>Sale</strong><br>
-      ₹${h.totalAmount}<br>
-      ${h.customerName} (${h.customerPhone})<br>
-      ${h.date}
-      <hr>
-    `;
-    list.appendChild(li);
+    list.innerHTML += `
+      <li>
+        ₹${h.totalAmount}<br>
+        ${h.date}
+        <hr>
+      </li>`;
   });
 }
 
-/* ================= INIT ================= */
+/* ================= DASHBOARD ================= */
 
-auth.onAuthStateChanged(user => {
-  if (!user) return;
-  listenStock();
-  listenCart();
-  listenHistory();
-});
+function updateDashboard() {
+  if (!totalStock) return;
+
+  totalStock.innerText = stock.length;
+  outStock.innerText = stock.filter(i => i.quantity === 0).length;
+  lowStock.innerText = stock.filter(i => i.quantity > 0 && i.quantity < 5).length;
+}
+
+/* ================= EXPOSE ================= */
+
+window.addStock = addStock;
+window.editItem = editItem;
+window.changeQty = changeQty;
+window.manualQty = manualQty;
+window.addToCart = addToCart;
+window.goToCart = goToCart;
+window.checkoutCart = checkoutCart;
+window.removeCartItem = removeCartItem;

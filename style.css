@@ -315,3 +315,97 @@ table th {
   color: #555;
   font-size: 14px;
 }
+/* ===== CART PAGE UPGRADE ===== */
+
+#cartList li {
+  background: #1f2f33;
+  padding: 16px;
+  border-radius: 18px;
+  margin-bottom: 14px;
+  box-shadow: 0 8px 22px rgba(0,0,0,0.25);
+  transition: transform .2s ease, box-shadow .2s ease;
+}
+
+#cartList li:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 28px rgba(0,0,0,0.35);
+}
+
+#cartList strong {
+  font-size: 18px;
+  display: block;
+  margin-bottom: 8px;
+  color: #00e676;
+}
+
+#cartList span {
+  font-size: 15px;
+}
+
+#cartList div {
+  margin-bottom: 8px;
+}
+
+#cartList .btn {
+  background: #ff5252;
+  border-radius: 14px;
+  padding: 10px;
+  margin-top: 6px;
+}
+
+#cartList .btn:hover {
+  background: #ff1744;
+}
+
+/* ===== CART SUMMARY ===== */
+
+#cartSummary {
+  background: #b8e3e9;
+  padding: 18px;
+  border-radius: 20px;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.25);
+}
+
+#cartSummary h2 {
+  margin-top: 8px;
+}
+
+/* ===== EMPTY STATE ===== */
+
+#emptyCart {
+  font-size: 18px;
+  opacity: 0.7;
+}
+/* ===== CHECKOUT CONFIRM BUTTON ===== */
+
+.checkout-btn {
+  background: linear-gradient(135deg, #00e676, #00c853);
+  color: #003300;
+  font-size: 20px;
+  padding: 16px;
+  border-radius: 22px;
+  font-weight: 700;
+  box-shadow: 0 10px 25px rgba(0,230,118,0.4);
+  transition: transform .2s ease, box-shadow .2s ease;
+}
+
+.checkout-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 14px 30px rgba(0,230,118,0.6);
+}
+.checkout-btn{
+  width:100%;
+  background:linear-gradient(135deg,#00e676,#00c853);
+  color:#003300;
+  font-size:20px;
+  padding:16px;
+  border-radius:22px;
+  font-weight:700;
+  border:none;
+  margin-top:12px;
+  cursor:pointer;
+  box-shadow:0 10px 25px rgba(0,230,118,.5);
+}
+.checkout-btn:hover{
+  transform:translateY(-2px);
+}
