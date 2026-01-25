@@ -1,87 +1,107 @@
-// ================================
-// LOAD DATA
-// ================================
-let stock = JSON.parse(localStorage.getItem("stock")) || [];
-let history = JSON.parse(localStorage.getItem("history")) || [];
-let cart = JSON.parse(localStorage.getItem("cart")) || {};
+import { onSnapshot } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
 
-// ================================
-// ACTIVITY LOGGER
-// ================================
-function logActivity(type, message, extra = {}) {
-  history.push({
-    type,
-    message,
-    date: new Date().toLocaleString(),
-    ...extra
-  });
-  localStorage.setItem("history", JSON.stringify(history));
+import { auth, db } from "./firebase.js";
+import {
+  collection,
+  getDocs,
+  addDoc,
+  updateDoc,
+  deleteDoc,
+  doc,
+  query,
+  where
+} from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
+
+/* ================= USER DATA REFS ================= */
+
+function stockRef() {
+  return collection(db, "users", auth.currentUser.uid, "stock");
 }
 
-// ================================
-// ADD / REFILL STOCK
-// ================================
-function addStock() {
-  let name = document.getElementById("productName").value.trim();
-  let barcode = document.getElementById("productBarcode").value.trim();
-  let quantity = parseFloat(document.getElementById("productQuantity").value);
-  let unit = document.getElementById("unit").value;
-  let price = parseFloat(document.getElementById("productPrice").value);
+function historyRef() {
+  return collection(db, "users", auth.currentUser.uid, "history");
+}
 
-  if (!name || !barcode || isNaN(quantity) || isNaN(price)) {
-    alert("Enter valid details");
-    return;
-  }
+function cartRef() {
+  return collection(db, "users", auth.currentUser.uid, "cart");
+}
 
-  const existing = stock.find(i => i.barcode === barcode);
+/* ================= LOCAL CACHE ================= */
 
-  if (existing) {
-    existing.quantity += quantity;
-    existing.price = price;
-    existing.unit = unit;
-    logActivity("Stock Refilled", `${name} +${quantity} ${unit}`, { barcode, quantity });
-  } else {
-    stock.push({ name, barcode, quantity, unit, price });
-    logActivity("Stock Added", `${name} (${quantity} ${unit}) added`, { barcode, quantity });
-  }
+let stock = [];
+let cart = {};
+let history = [];
 
-  localStorage.setItem("stock", JSON.stringify(stock));
-  alert("Stock saved");
+/* ================= LOAD ALL ================= */
 
-  document.getElementById("productName").value = "";
-  document.getElementById("productBarcode").value = "";
-  document.getElementById("productQuantity").value = "";
-  document.getElementById("productPrice").value = "";
-
+async function loadAll() {
+  await loadStock();
+  await loadCart();
+  await loadHistory();
+  updateCartBar();
   updateDashboard();
+  if (document.getElementById("historyList")) renderHistory();
 }
 
-// ================================
-// EDIT ITEM
-// ================================
-function editItem(barcode) {
+/* ================= STOCK ================= */
+
+function listenStock() {
+  onSnapshot(stockRef(), snap => {
+    stock = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    populateSell();
+    updateDashboard();
+  });
+}
+
+
+async function addStock() {
+  const name = productName.value.trim();
+  const barcode = productBarcode.value.trim();
+  const quantity = Number(productQuantity.value);
+  const unit = document.getElementById("unit").value;
+  const price = Number(productPrice.value);
+
+  if (!name || !barcode || !quantity || !price) return alert("Fill all fields");
+
+  const q = query(stockRef(), where("barcode", "==", barcode));
+  const snap = await getDocs(q);
+
+  if (!snap.empty) {
+    const ref = snap.docs[0].ref;
+    const data = snap.docs[0].data();
+
+    await updateDoc(ref, {
+      quantity: data.quantity + quantity,
+      price,
+      unit
+    });
+  } else {
+    await addDoc(stockRef(), { name, barcode, quantity, unit, price });
+  }
+
+  loadStock();
+}
+
+/* ================= EDIT ================= */
+
+async function editItem(barcode) {
   const item = stock.find(i => i.barcode === barcode);
   if (!item) return;
 
-  const oldData = { ...item };
-
-  let newName = prompt("Edit Name:", item.name);
-  let newPrice = Number(prompt("Edit Price:", item.price));
+  const newName = prompt("Edit Name:", item.name);
+  const newPrice = Number(prompt("Edit Price:", item.price));
   if (!newName || isNaN(newPrice)) return;
 
-  item.name = newName;
-  item.price = newPrice;
+  await updateDoc(doc(db, "users", auth.currentUser.uid, "stock", item.id), {
+    name: newName,
+    price: newPrice
+  });
 
-  localStorage.setItem("stock", JSON.stringify(stock));
-  logActivity("Item Edited", `${oldData.name} updated`, { before: oldData, after: item });
-
-  populateSell();
-  updateDashboard();
+  loadStock();
 }
 
-// ================================
-// POPULATE SELL PAGE
-// ================================
+/* ================= SELL PAGE ================= */
+
 function populateSell(list = stock) {
   const ul = document.getElementById("stockList");
   if (!ul) return;
@@ -96,17 +116,17 @@ function populateSell(list = stock) {
     const li = document.createElement("li");
     li.innerHTML = `
       <div class="item-info">
-        <strong title="${item.name}">${item.name}</strong>
+        <strong>${item.name}</strong>
         <small>Available: ${item.quantity} ${item.unit}</small>
         <small>
           Price: ₹${item.price}
           <button onclick="editItem('${item.barcode}')" class="edit-btn">✏</button>
         </small>
       </div>
-
-      <div style="display:flex; align-items:center; gap:10px; margin-top:10px;">
+      <div style="display:flex; gap:10px; margin-top:10px;">
         <button class="qty-btn" onclick="changeQty('${item.barcode}', -${step})">−</button>
-        <input id="qty-${item.barcode}" value="${cart[item.barcode].qty}" style="width:50px; text-align:center;" oninput="manualQty('${item.barcode}', this.value)">
+        <input id="qty-${item.barcode}" value="${cart[item.barcode].qty}" style="width:50px;text-align:center" 
+        oninput="manualQty('${item.barcode}', this.value)">
         <button class="qty-btn" onclick="changeQty('${item.barcode}', ${step})">+</button>
         <button class="btn" onclick="addToCart('${item.barcode}')">Add</button>
       </div>
@@ -115,9 +135,8 @@ function populateSell(list = stock) {
   });
 }
 
-// ================================
-// MANUAL INPUT CHANGE
-// ================================
+/* ================= QTY ================= */
+
 function manualQty(barcode, value) {
   const item = stock.find(i => i.barcode === barcode);
   if (!item) return;
@@ -126,18 +145,12 @@ function manualQty(barcode, value) {
   if (isNaN(num) || num < 0) num = 0;
   if (num > item.quantity) num = item.quantity;
 
-  if (!cart[barcode]) cart[barcode] = { qty: 0, price: item.price, unit: item.unit };
   cart[barcode].qty = num;
 }
 
-// ================================
-// CHANGE QTY IN SELL PAGE
-// ================================
 function changeQty(barcode, change) {
   const item = stock.find(i => i.barcode === barcode);
   if (!item) return;
-
-  if (!cart[barcode]) cart[barcode] = { qty: 0, price: item.price, unit: item.unit };
 
   let next = cart[barcode].qty + change;
   if (item.unit === "kg" || item.unit === "g") next = Math.round(next * 10) / 10;
@@ -147,72 +160,76 @@ function changeQty(barcode, change) {
   if (next > item.quantity) next = item.quantity;
 
   cart[barcode].qty = next;
-  const input = document.getElementById(`qty-${barcode}`);
-  if (input) input.value = next;
+  document.getElementById(`qty-${barcode}`).value = next;
 }
 
-// ================================
-// ADD TO CART
-// ================================
-function addToCart(barcode) {
+/* ================= CART ================= */
+
+async function addToCart(barcode) {
   const item = stock.find(i => i.barcode === barcode);
   if (!item || cart[barcode].qty <= 0) return;
 
-  let liveCart = JSON.parse(localStorage.getItem("cart")) || {};
+  const qty = cart[barcode].qty;
+  cart[barcode].qty = 0;
 
-  if (!liveCart[barcode]) {
-    liveCart[barcode] = { name: item.name, barcode, qty: cart[barcode].qty, price: item.price, unit: item.unit };
+  const q = query(cartRef(), where("barcode", "==", barcode));
+  const snap = await getDocs(q);
+
+  if (!snap.empty) {
+    const ref = snap.docs[0].ref;
+    const data = snap.docs[0].data();
+    await updateDoc(ref, { qty: data.qty + qty });
   } else {
-    liveCart[barcode].qty += cart[barcode].qty;
+    await addDoc(cartRef(), { name: item.name, barcode, qty, price: item.price, unit: item.unit });
   }
 
-  logActivity("Cart Add", `${item.name} × ${cart[barcode].qty} added to cart`, { barcode, qty: cart[barcode].qty });
-
-  cart[barcode].qty = 0;
-  localStorage.setItem("cart", JSON.stringify(liveCart));
-  updateCartBar();
-  populateSell();
+  loadCart();
 }
 
-// ================================
-// CART BAR
-// ================================
+function listenCart() {
+  onSnapshot(cartRef(), snap => {
+    cart = {};
+    snap.docs.forEach(d => {
+      const i = d.data();
+      cart[i.barcode] = i;
+    });
+    updateCartBar();
+    if (document.getElementById("cartList")) renderCartPage();
+  });
+}
+
+
 function updateCartBar() {
   const bar = document.getElementById("cartBar");
   const info = document.getElementById("cartInfo");
   if (!bar) return;
 
-  const liveCart = JSON.parse(localStorage.getItem("cart")) || {};
   let items = 0, amount = 0;
-
-  for (let k in liveCart) {
-    items += liveCart[k].qty;
-    amount += liveCart[k].qty * liveCart[k].price;
-  }
+  Object.values(cart).forEach(i => {
+    items += i.qty;
+    amount += i.qty * i.price;
+  });
 
   bar.style.display = items ? "flex" : "none";
   info.innerText = `${items} items | ₹${amount}`;
 }
 
 function goToCart() {
-  window.location.href = "cart.html";
+  location.href = "cart.html";
 }
 
-// ================================
-// CART PAGE FUNCTIONS
-// ================================
+/* ================= CART PAGE ================= */
+
 function renderCartPage() {
   const list = document.getElementById("cartList");
   const empty = document.getElementById("emptyCart");
   const summary = document.getElementById("cartSummary");
-  if (!list || !empty || !summary) return;
-
-  const currentCart = JSON.parse(localStorage.getItem("cart")) || {};
-  const keys = Object.keys(currentCart);
+  if (!list) return;
 
   list.innerHTML = "";
 
-  if (keys.length === 0) {
+  const keys = Object.keys(cart);
+  if (!keys.length) {
     empty.style.display = "block";
     summary.style.display = "none";
     return;
@@ -221,144 +238,113 @@ function renderCartPage() {
   empty.style.display = "none";
   summary.style.display = "block";
 
-  let totalItems = 0;
-  let totalAmount = 0;
+  let totalItems = 0, totalAmount = 0;
 
   keys.forEach(barcode => {
-    const data = currentCart[barcode];
-    const amount = data.qty * data.price;
-
-    totalItems += data.qty;
+    const d = cart[barcode];
+    const amount = d.qty * d.price;
+    totalItems += d.qty;
     totalAmount += amount;
 
     const li = document.createElement("li");
-    li.style.background = "#232323";
-    li.style.padding = "12px";
-    li.style.borderRadius = "12px";
-    li.style.marginBottom = "10px";
-
     li.innerHTML = `
-      <strong>${data.name}</strong>
-      <div style="display:flex; justify-content:space-between; margin-top:5px;">
-        <span>₹${data.price} × ${data.qty} ${data.unit}</span>
+      <strong>${d.name}</strong>
+      <div style="display:flex; justify-content:space-between;">
+        <span>${d.qty} × ₹${d.price}</span>
         <span>₹${amount}</span>
       </div>
-      <div style="display:flex; gap:6px; margin-top:8px; align-items:center;">
-        <button class="qty-btn" onclick="changeCartQty('${barcode}', -1)">−</button>
-        <span>${data.qty}</span>
-        <button class="qty-btn" onclick="changeCartQty('${barcode}', 1)">+</button>
-        <button class="btn" style="background:#ff4d4d; margin-left:auto;" onclick="removeCartItem('${barcode}')">Remove</button>
-      </div>
+      <button class="btn" onclick="removeCartItem('${barcode}')">Remove</button>
     `;
     list.appendChild(li);
   });
 
-  document.getElementById("totalItems").innerText = totalItems;
-  document.getElementById("totalAmount").innerText = totalAmount;
+  totalItems.innerText = totalItems;
+  totalAmount.innerText = totalAmount;
 }
 
-// ================================
-// CHANGE CART QTY / REMOVE
-// ================================
-function changeCartQty(barcode, change) {
-  const currentCart = JSON.parse(localStorage.getItem("cart")) || {};
-  if (!currentCart[barcode]) return;
-
-  currentCart[barcode].qty += change;
-  if (currentCart[barcode].qty <= 0) delete currentCart[barcode];
-
-  localStorage.setItem("cart", JSON.stringify(currentCart));
-  renderCartPage();
-  updateCartBar();
+async function removeCartItem(barcode) {
+  const q = query(cartRef(), where("barcode", "==", barcode));
+  const snap = await getDocs(q);
+  if (!snap.empty) await deleteDoc(snap.docs[0].ref);
+  loadCart();
 }
 
-function removeCartItem(barcode) {
-  const currentCart = JSON.parse(localStorage.getItem("cart")) || {};
-  delete currentCart[barcode];
-  localStorage.setItem("cart", JSON.stringify(currentCart));
-  renderCartPage();
-  updateCartBar();
-}
+/* ================= CHECKOUT ================= */
 
-// ================================
-// CHECKOUT (UPDATED)
-// ================================
-function checkoutCart() {
-  const currentCart = JSON.parse(localStorage.getItem("cart")) || {};
-  if (Object.keys(currentCart).length === 0) return;
+async function checkoutCart() {
+  if (!Object.keys(cart).length) return;
 
-  const customerName = prompt("Enter customer name") || "Walk-in Customer";
-  const customerPhone = prompt("Enter customer phone number") || "N/A";
+  const customerName = prompt("Customer name") || "Walk-in";
+  const customerPhone = prompt("Phone") || "N/A";
 
   let totalItems = 0;
   let totalAmount = 0;
 
-  for (let barcode in currentCart) {
-    const data = currentCart[barcode];
+  for (let barcode in cart) {
+    const d = cart[barcode];
     const item = stock.find(i => i.barcode === barcode);
     if (!item) continue;
 
-    item.quantity -= data.qty;
-    totalItems += data.qty;
-    totalAmount += data.qty * data.price;
+    totalItems += d.qty;
+    totalAmount += d.qty * d.price;
+
+    await updateDoc(doc(db, "users", auth.currentUser.uid, "stock", item.id), {
+      quantity: item.quantity - d.qty
+    });
   }
 
-  history.push({
-    type: "Sale",
+  await addDoc(historyRef(), {
     customerName,
     customerPhone,
-    date: new Date().toLocaleDateString(),
-    time: new Date().toLocaleTimeString(),
     totalItems,
     totalAmount,
-    items: currentCart
+    items: cart,
+    date: new Date().toLocaleString()
   });
 
-  localStorage.setItem("stock", JSON.stringify(stock));
-  localStorage.setItem("history", JSON.stringify(history));
-  localStorage.removeItem("cart");
+  const snap = await getDocs(cartRef());
+  for (const d of snap.docs) await deleteDoc(d.ref);
 
-  renderCartPage();
-  updateCartBar();
-  updateDashboard();
+  cart = {};
+  loadAll();
 
-  alert(`Payment marked as paid ✔\nThank you ${customerName}`);
+  alert("Payment completed ✔");
 }
 
-// ================================
-// HISTORY PAGE
-// ================================
+/* ================= HISTORY ================= */
+
+function listenHistory() {
+  onSnapshot(historyRef(), snap => {
+    history = snap.docs.map(d => d.data());
+    if (document.getElementById("historyList")) renderHistory();
+  });
+}
+
+
 function renderHistory() {
-  const historyData = JSON.parse(localStorage.getItem("history")) || [];
   const list = document.getElementById("historyList");
   if (!list) return;
 
   list.innerHTML = "";
 
-  if (historyData.length === 0) {
-    list.innerHTML = "<p>No history available</p>";
-    return;
-  }
-
-  historyData.slice().reverse().forEach(h => {
+  history.slice().reverse().forEach(h => {
     const li = document.createElement("li");
-    li.style.marginBottom = "12px";
-
     li.innerHTML = `
-      <strong>${h.type}</strong><br>
-      <small>${h.date || ""} ${h.time || ""}</small><br>
-      <small>${h.customerName || ""} ${h.customerPhone || ""}</small><br>
-      <span>${h.totalItems || 0} items × ₹${h.totalAmount || 0}</span>
+      <strong>Sale</strong><br>
+      ₹${h.totalAmount}<br>
+      ${h.customerName} (${h.customerPhone})<br>
+      ${h.date}
       <hr>
     `;
     list.appendChild(li);
   });
 }
 
-// ================================
-// INIT
-// ================================
-updateCartBar();
-updateDashboard();
-if (document.getElementById("stockList")) populateSell();
-if (document.getElementById("historyList")) renderHistory();
+/* ================= INIT ================= */
+
+auth.onAuthStateChanged(user => {
+  if (!user) return;
+  listenStock();
+  listenCart();
+  listenHistory();
+});
