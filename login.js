@@ -1,10 +1,8 @@
-// login.js
-
 import { auth } from "./firebase.js";
 import { signInWithEmailAndPassword }
 from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
 
-window.login = function () {
+window.login = async function () {
   const email = document.getElementById("email").value.trim();
   const password = document.getElementById("password").value;
 
@@ -13,11 +11,10 @@ window.login = function () {
     return;
   }
 
-  signInWithEmailAndPassword(auth, email, password)
-    .then(() => {
-      window.location.href = "index.html";
-    })
-    .catch(() => {
-      alert("Access denied or account disabled");
-    });
+  try {
+    await signInWithEmailAndPassword(auth, email, password);
+    window.location.href = "index.html";
+  } catch (err) {
+    alert("Invalid login credentials");
+  }
 };
